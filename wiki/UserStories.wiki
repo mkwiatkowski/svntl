@@ -1,7 +1,18 @@
 #summary Aggregator page for all user stories.
 
+*Note*: First header level represents a user story, second represents a task.
+
 == LOC changes per time ==
 Graph of how LOC changes during whole project development. X-axis represent time (since revision 1 commit time to last revision commit time) and Y-axis - LOC. Binary files should be omitted.
 
+=== Getting a list of revisions from Subversion repository ===
 
+=== Counting LOC of the whole project for given revision ===
+
+=== Generating a graph of LOC/time ===
+
+Graph libaries to consider:
+  * [http://nubyonrails.com/pages/gruff Gruff]
+  * [http://www.germane-software.com/software/SVG/SVG::Graph/ SVG::Graph]
+  * ...more?
 
