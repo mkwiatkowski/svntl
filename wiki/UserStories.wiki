@@ -1,0 +1,7 @@
+_Aggregator page for all user stories._
+
+== LOC changes per time ==
+Graph of how LOC changes during whole project development. X-axis represent time (since revision 1 commit time to last revision commit time) and Y-axis - LOC. Binary files should be omitted.
+
+
+
