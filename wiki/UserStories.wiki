@@ -5,9 +5,9 @@
 == LOC changes per time ==
 Graph of how LOC changes during whole project development. X-axis represent time (since revision 1 commit time to last revision commit time) and Y-axis - LOC. Binary files should be omitted.
 
-=== Getting a list of revisions from Subversion repository ===
+=== Getting number of last revision for given Subversion repository ===
 
-Via standard 'svn' command using '--xml -v log' arguments. We need an XML parser, which will probably be stdlib's REXML.
+Via standard 'svn' command using 'info --xml' argument. We need an XML parser, which will probably be stdlib's REXML.
 
 === Counting LOC of the whole project for given revision ===
 
@@ -19,6 +19,5 @@ Graph libaries to consider:
   * [http://nubyonrails.com/pages/gruff Gruff]
   * [http://www.germane-software.com/software/SVG/SVG::Graph/ SVG::Graph]
   * ...more?
-
 
 
