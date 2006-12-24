@@ -9,4 +9,3 @@
   * All user requirements
   * [http://rake.rubyforge.org/ Rake]
   * [http://rspec.rubyforge.org/ RSpec]
-
