@@ -11,7 +11,7 @@ Via standard 'svn' command using '--xml -v log' arguments. We need an XML parser
 
 === Counting LOC of the whole project for given revision ===
 
-Going hardcore and doing 'svn cat' for each file in a revision seems like an overkill. I'm thinking about doing 'svn diff' between revisions and calculating number of added/deleted lines by looking at diff chunk headers (looking like: _@@ -28,19 +28,26 @@_). It has also this nice feature that Subversion doesn't diff binary files, so we have these automatically excluded. I need confirmation that this technique will work.
+Going hardcore and doing 'svn cat' for each file in a revision seems like an overkill. I'm thinking about doing 'svn diff' between revisions and calculating number of added/deleted lines by looking at the diff output. There exist [http://viewvc.tigris.org/source/browse/viewvc/trunk/bin/svndbadmin?rev=1288&view=markup a sample python script] for doing that, so it won't be hard to implement. Actual algorithm would execute `svn diff -rREV1:REV2 --diff-cmd "diff" -x "--normal"` and grep for `^<` and `^>`.
 
 === Generating a graph of LOC/time ===
 
@@ -19,5 +19,6 @@ Graph libaries to consider:
   * [http://nubyonrails.com/pages/gruff Gruff]
   * [http://www.germane-software.com/software/SVG/SVG::Graph/ SVG::Graph]
   * ...more?
+
 
 
