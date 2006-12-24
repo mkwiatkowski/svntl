@@ -1,4 +1,5 @@
 #summary Aggregator page for all user stories.
+#labels Featured
 
 *Note*: First header level represents a user story, second represents a task.
 
@@ -19,5 +20,4 @@ Graph libaries to consider:
   * [http://nubyonrails.com/pages/gruff Gruff]
   * [http://www.germane-software.com/software/SVG/SVG::Graph/ SVG::Graph]
   * ...more?
-
 
