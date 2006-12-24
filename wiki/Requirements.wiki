@@ -1,0 +1,12 @@
+#summary Software requirements for running/developing svntl.
+
+== User requirements ==
+
+  * [http://www.ruby-lang.org/ Ruby]
+
+== Development requirements ==
+
+  * All user requirements
+  * [http://rake.rubyforge.org/ Rake]
+  * [http://rspec.rubyforge.org/ RSpec]
+
