@@ -1,16 +1,5 @@
+require 'enumerator'
 require 'rexml/document'
-
-class Array
-  def each_cons length
-    each_index do |i|
-      if i + length > size
-        break
-      end
-
-      yield slice(i, length)
-    end
-  end
-end
 
 class REXML::Document
   def inject_elements xpath, initial=nil
