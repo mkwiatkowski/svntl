@@ -1,5 +1,5 @@
 require 'rubygems'
-require_gem 'builder'
+require 'builder'
 
 require 'svntl'
 include SvnTimeline
