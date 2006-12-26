@@ -12,19 +12,12 @@ rescue LoadError
 end
 
 class REXML::Document
-  def inject_elements xpath, initial=nil
-    first = true
-
-    each_element(xpath) do |element|
-      if first and initial == nil
-        initial = element
-        first = false
-      else
-        initial = yield initial, element
-      end
+  def inject_elements xpath, initial=nil, &block
+    if initial == nil
+      get_elements(xpath).inject { |*args| block.call(*args) }
+    else
+      get_elements(xpath).inject(initial) { |*args| block.call(*args) }
     end
-
-    initial
   end
 end
 

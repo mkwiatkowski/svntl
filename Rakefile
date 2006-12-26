@@ -8,7 +8,7 @@ Spec::Rake::SpecTask.new(:spec) do |t|
 end
 
 RCov::VerifyTask.new(:verify_rcov => :spec) do |t|
-  t.threshold = 98.4
+  t.threshold = 98.6
 end
 
 task :default  => :verify_rcov
