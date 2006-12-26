@@ -1,0 +1,5 @@
+#summary Example output of svntl.
+#labels Featured
+
+== LOC per commit statistics ==
+http://svntl.googlecode.com/svn/wiki/svntl_loc_per_commit.png
