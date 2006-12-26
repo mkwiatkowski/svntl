@@ -137,13 +137,24 @@ module SvnTimeline
     def chart_loc_per_commit options={}
       revisions = trim_zeroes(@revisions)
 
-      @chart = Gruff::Line.new
+      if options[:small]
+        @chart = Gruff::Line.new 200
+      else
+        @chart = Gruff::Line.new
+      end
+
       @chart.data "LOC", revisions.map { |r| r.loc }
       @chart.labels = labels_for revisions
       @chart.title = (options[:title] or @url)
       @chart.hide_dots = true
       @chart.hide_legend = true
       @chart.marker_font_size = 10
+
+      if options[:small]
+        @chart.hide_line_markers = true
+        @chart.title_font_size = 50
+      end
+
       @chart.write((options[:file] or 'loc.png'))
     end
 
