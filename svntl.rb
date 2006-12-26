@@ -1,6 +1,16 @@
 require 'enumerator'
 require 'rexml/document'
 
+require 'rubygems'
+begin
+  require 'gruff'
+rescue LoadError
+  $stderr.puts "You don't seem to have Gruff library installed. It is needed for chart generation.",
+               "To install with Ruby Gems:",
+               "  sudo gem install gruff",
+               "If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=1044 ."
+end
+
 class REXML::Document
   def inject_elements xpath, initial=nil
     first = true
@@ -18,6 +28,8 @@ class REXML::Document
   end
 end
 
+######################################################################
+# Data retrieval part.
 module SvnTimeline
 
   # Execute given command, returning its output on success.
@@ -36,9 +48,9 @@ module SvnTimeline
     attr_reader :number
     attr_accessor :loc
 
-    def initialize number
+    def initialize number, loc=0
       @number = number
-      @loc = 0
+      @loc = loc
     end
   end
 
@@ -111,6 +123,55 @@ module SvnTimeline
       rescue IOError
         raise SubversionError, "No such repository."
       end
+    end
+  end
+end
+
+######################################################################
+# Generation of graphical charts.
+class Array
+  def each_nth_with_index jump
+    each_with_index do |element, index|
+      if index % jump == 0
+        yield element, index
+      end
+    end
+  end
+end
+
+module SvnTimeline
+  class SubversionRepository
+    def chart_loc_per_commit options={}
+      revisions = trim_zeroes(@revisions)
+
+      @chart = Gruff::Line.new
+      @chart.data "LOC", revisions.map { |r| r.loc }
+      @chart.labels = labels_for revisions
+      @chart.title = (options[:title] or @url)
+      @chart.hide_dots = true
+      @chart.hide_legend = true
+      @chart.marker_font_size = 10
+      @chart.write((options[:file] or 'loc.png'))
+    end
+
+    private
+    def trim_zeroes revisions
+      while not revisions.empty? and revisions[0].loc == 0
+        revisions = revisions.slice(1, revisions.size - 1)
+      end
+      revisions
+    end
+
+    def labels_for revisions
+      # To ensure that there will be enough place for labels
+      #   use at most 20 of them.
+      jump = (revisions.size / 20.0).ceil
+
+      labels = {}
+      revisions.each_nth_with_index(jump) do |rev, idx|
+        labels[idx] = rev.number.to_s
+      end
+      labels
     end
   end
 end
