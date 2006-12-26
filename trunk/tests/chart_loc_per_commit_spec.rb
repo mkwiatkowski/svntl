@@ -133,4 +133,34 @@ context "Method chart_loc_per_commit" do
 
     @repo.chart_loc_per_commit
   end
+
+  specify "should create 200px width chart when :small argument is present" do
+    Gruff::Line.should_receive(:new).with(200).and_return(@gruff_line_object)
+
+    @repo.chart_loc_per_commit :small => true
+  end
+
+  specify "should not hide line markers by default" do
+    @gruff_line_object.should_not_receive(:hide_line_markers=).with(true)
+
+    @repo.chart_loc_per_commit
+  end
+
+  specify "should hide line markers when :small argument is present" do
+    @gruff_line_object.should_receive(:hide_line_markers=).with(true)
+
+    @repo.chart_loc_per_commit :small => true
+  end
+
+  specify "should not set title font size to 50 by default" do
+    @gruff_line_object.should_not_receive(:title_font_size=).with(50)
+
+    @repo.chart_loc_per_commit
+  end
+
+  specify "should set title font size to 50 when :small argument is present" do
+    @gruff_line_object.should_receive(:title_font_size=).with(50)
+
+    @repo.chart_loc_per_commit :small => true
+  end
 end
