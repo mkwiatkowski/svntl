@@ -1,7 +1,7 @@
 #summary Aggregator page for all user stories.
 #labels Featured
 
-== LOC changes per time ==
+== LOC changes per time (completed in rev. 35) ==
 Graph of how LOC changes during whole project development. X-axis represent time (since revision 1 commit time to last revision commit time) and Y-axis - LOC. Binary files should be omitted.
 
 || *Task* || *Description* || *Status* ||
