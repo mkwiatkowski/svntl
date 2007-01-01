@@ -1,6 +1,15 @@
 #summary Aggregator page for all user stories.
 #labels Featured
 
+== Deliver svntl application ==
+Make a command line tool avaiable for users. The simplest case should be {{{"svntl SVN_URL"}}} to generate all graphs.
+
+|| *Task* || *Description* || *Status* ||
+|| Silence stderr of `SvnTimeline::execute_command` || *``* passes stderr, as well as *IO.popen* while *Open3.popen3* returns invalid exit code. || todo ||
+|| HTML output that gathers all charts together || || todo ||
+|| Command line interface || || todo ||
+|| Create ruby gem || Remember about gruff requirement. || todo ||
+
 == LOC changes per time (completed in rev. 35) ==
 Graph of how LOC changes during whole project development. X-axis represent time (since revision 1 commit time to last revision commit time) and Y-axis - LOC. Binary files should be omitted.
 
@@ -9,15 +18,3 @@ Graph of how LOC changes during whole project development. X-axis represent time
 || Counting LOC of the whole project for given revision || Going hardcore and doing 'svn cat' for each file in a revision seems like an overkill. I'm thinking about doing 'svn diff' between revisions and calculating number of added/deleted lines by looking at the diff output. There exist [http://viewvc.tigris.org/source/browse/viewvc/trunk/bin/svndbadmin?rev=1288&view=markup a sample python script] for doing that, so it won't be hard to implement. Actual algorithm would execute `svn diff -rREV1:REV2 --diff-cmd "diff" -x "--normal"` and grep for `^<` and `^>`. || completed (rev. 18) ||
 || Generating a graph of LOC/commit || || completed (rev. 25) ||
 || Generating a graph of LOC/day || Graph libraries to consider: [http://nubyonrails.com/pages/gruff Gruff], [http://www.germane-software.com/software/SVG/SVG::Graph/ SVG::Graph], ...more? || completed (rev. 35) ||
-
-
-
-
-
-
-
-
-
-
-
-
