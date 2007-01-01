@@ -1,3 +1,4 @@
+require 'date'
 require 'enumerator'
 require 'rexml/document'
 
@@ -38,12 +39,34 @@ module SvnTimeline
   end
 
   class Revision
-    attr_reader :number
+    attr_reader :date, :number
     attr_accessor :loc
 
-    def initialize number, loc=0
+    def initialize number, options={}
       @number = number
-      @loc = loc
+      @loc = (options[:loc] or 0)
+      @date = (options[:date] or nil)
+    end
+  end
+
+  class ListOfRevisions < Array
+    alias_method :orig_nitems, :nitems
+
+    def initialize
+      # Each repository have revision 0 with zero LOC.
+      self << Revision.new(0)
+    end
+
+    # Revision 0 is virtual and should not be counted.
+    def nitems
+      orig_nitems - 1
+    end
+
+    # Bind revisions with the same date together.
+    def by_day
+      hash = Hash.new { [] }
+      each { |rev| hash[rev.date] <<= rev }
+      hash
     end
   end
 
@@ -55,20 +78,7 @@ module SvnTimeline
 
     def initialize url
       @url = url
-      @revisions = []
-
-      # Each repository have revision 0 with zero LOC.
-      @revisions << Revision.new(0)
-
-      # But we should remember that revision 0 is virtual
-      # and should not be counted.
-      class << @revisions
-        alias_method :orig_nitems, :nitems
-
-        def nitems
-          orig_nitems - 1
-        end
-      end
+      @revisions = ListOfRevisions.new
 
       init_revisions
     end
@@ -96,7 +106,8 @@ module SvnTimeline
         doc = REXML::Document.new execute_command("svn log --xml #{@url}")
 
         doc.each_element("/log/logentry") do |logentry|
-          @revisions << Revision.new(logentry.attributes["revision"].to_i)
+          @revisions << Revision.new(logentry.attributes["revision"].to_i,
+                                     :date => Date.strptime(logentry.text("date")))
         end
 
         @revisions.sort! { |r1, r2| r1.number <=> r2.number }
@@ -130,11 +141,27 @@ class Array
       end
     end
   end
+
+  def keys
+    map { |key, value| key }
+  end
+
+  def values
+    map { |key, value| value }
+  end
+end
+
+class Hash
+  def hmap
+    each_pair do |key, value|
+      store key, yield(value)
+    end
+  end
 end
 
 module SvnTimeline
   class SubversionRepository
-    def chart_loc_per_commit options={}
+    def chart_loc options={}
       revisions = trim_zeroes(@revisions)
 
       if options[:small]
@@ -143,8 +170,9 @@ module SvnTimeline
         @chart = Gruff::Line.new
       end
 
-      @chart.data "LOC", revisions.map { |r| r.loc }
-      @chart.labels = labels_for revisions
+      # Caller should set chart.data and chart.labels.
+      yield @chart, revisions
+
       @chart.title = (options[:title] or @url)
       @chart.hide_dots = true
       @chart.hide_legend = true
@@ -158,6 +186,21 @@ module SvnTimeline
       @chart.write((options[:file] or 'loc.png'))
     end
 
+    def chart_loc_per_commit options={}
+      chart_loc options do |chart, revisions|
+        chart.data "LOC", revisions.map { |r| r.loc }
+        chart.labels = labels_for(revisions) { |r| r.number.to_s }
+      end
+    end
+
+    def chart_loc_per_day options={}
+      chart_loc options do |chart, revisions|
+        revisions = revisions.by_day.hmap { |r| r.last.loc }
+        chart.data "LOC", revisions.sort.values
+        chart.labels = labels_for(revisions.sort.keys, 10) { |d| d.to_s }
+      end
+    end
+
     private
     def trim_zeroes revisions
       while not revisions.empty? and revisions[0].loc == 0
@@ -166,14 +209,14 @@ module SvnTimeline
       revisions
     end
 
-    def labels_for revisions
+    def labels_for revisions, maximum=20
       # To ensure that there will be enough place for labels
-      #   use at most 20 of them.
-      jump = (revisions.size / 20.0).ceil
+      #   use at most @maximum of them.
+      jump = (revisions.size / maximum.to_f).ceil
 
       labels = {}
       revisions.each_nth_with_index(jump) do |rev, idx|
-        labels[idx] = rev.number.to_s
+        labels[idx] = yield rev
       end
       labels
     end

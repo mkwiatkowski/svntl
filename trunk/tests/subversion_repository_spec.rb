@@ -1,5 +1,7 @@
 require 'rubygems'
 require 'builder'
+require 'set'
+require 'date'
 
 require 'svntl'
 include SvnTimeline
@@ -16,11 +18,15 @@ class Integer
   end
 end
 
+def keys_of *hashes
+  hashes.inject([]) { |all_keys, hash| all_keys.concat hash.keys }.to_set
+end
+
 module Spec::Runner::ContextEval::ModuleMethods
   def mock_svn options={}
     setup do
       SubversionRepository.override!(:execute_command).with do |command|
-        options = { :loc => {}, :entries => Hash.new({}) }.merge!(options)
+        options = { :loc => {}, :datetime => {}, :entries => Hash.new({}) }.merge!(options)
         existing_root_url = 'file:///existing/repository'
         existing_trunk_url = "#{existing_root_url}/trunk"
 
@@ -32,7 +38,8 @@ module Spec::Runner::ContextEval::ModuleMethods
              /svn diff -r(\d+):(\d+) --diff-cmd "diff" -x "--normal" #{existing_root_url}/
           # Each repository have implicit revision no 0 with 0 LOC.
           loc = options[:loc].merge!({ 0 => 0 })
-          loc_start, loc_end = loc[$1.to_i], loc[$2.to_i]
+          loc_start = (loc[$1.to_i] or 0)
+          loc_end = (loc[$2.to_i] or 0)
 
           diff_document = ""
 
@@ -53,12 +60,14 @@ module Spec::Runner::ContextEval::ModuleMethods
           xml = Builder::XmlMarkup.new :target => xml_document
           xml.instruct!
           xml.log do
-            options[:loc].to_a.sort.each do |rev|
-              rev = rev[0]
-
+            keys_of(options[:loc], options[:datetime]).sort.each do |rev|
               xml.logentry :revision => rev do
                 xml.author "ruby"
-                xml.date "2006-12-13T12:13:14.123456Z"
+                xml.date(if options[:datetime][rev]
+                           options[:datetime][rev].strftime("%FT%T.000000%Z")
+                         else
+                           "2006-12-13T12:13:14.123456Z"
+                         end)
                 xml.msg "Bugfixes."
               end
             end
@@ -300,5 +309,21 @@ context "Repository with three revisions of empty files" do
 
   specify "should report 0 LOC for revision(5)" do
     @repo.revision(5).loc.should == 0
+  end
+end
+
+context "Repository with two revisions, one from 28 Dec 2006, other from 6 Mar 2005" do
+  mock_svn :datetime => { 1 => Date.new(2006, 12, 28), 2 => Date.new(2005, 3, 6) }
+
+  setup do
+    @repo = SubversionRepository.new "file:///existing/repository"
+  end
+
+  specify "should report 28 Dec 2006 date of revision(1)" do
+    @repo.revision(1).date.should == Date.new(2006, 12, 28)
+  end
+
+  specify "should report 6 Mar 2005 date of revision(2)" do
+    @repo.revision(2).date.should == Date.new(2005, 3, 6)
   end
 end
