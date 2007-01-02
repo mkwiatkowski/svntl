@@ -1,0 +1,8 @@
+#summary Other existing open-source projects for generating subversion statistics.
+
+|| *Project name* || *Language* || *License* ||
+|| [http://www.molgard.eu/substats/ SubStats] || Ruby || GPL ||
+|| [http://www.statsvn.org/ StatSVN] || Java || LGPL ||
+|| [http://mpy-svn-stats.berlios.de/ MPY SVN STATS] || Python || GPL ||
+|| [http://cvsanaly.tigris.org/  CVSAnalY] || Python || GPL ||
+
