@@ -139,7 +139,7 @@ context "Empty repository" do
   end
 
   specify "should have zero revisions" do
-    @repo.revisions.nitems.should == 0
+    @repo.revisions.number.should == 0
   end
 end
 
@@ -151,7 +151,7 @@ context "Repository with one revision" do
   end
 
   specify "should have one revision" do
-    @repo.revisions.nitems.should == 1
+    @repo.revisions.number.should == 1
   end
 
   specify "should return Revision object on revision(0)" do
@@ -183,7 +183,7 @@ context "Repository with three revisions" do
   end
 
   specify "should have three revisions" do
-    @repo.revisions.nitems.should == 3
+    @repo.revisions.number.should == 3
   end
 
   specify "should report 5 LOC for revision(1)" do
@@ -207,7 +207,7 @@ context "Repository with five scattered revisions" do
   end
 
   specify "should have five revisions" do
-    @repo.revisions.nitems.should == 5
+    @repo.revisions.number.should == 5
   end
 
   specify "should report 10 LOC for revision(3)" do
