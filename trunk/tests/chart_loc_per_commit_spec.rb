@@ -36,4 +36,12 @@ context "Method chart_loc_per_commit" do
 
     @repo.chart_loc_per_commit
   end
+
+  specify "should set labels to {0=>\"9\", 1=>\"10\"} for repository with non-empty revisions 9 and 10" do
+    @repo.revisions << Revision.new(9, :loc => 1)
+    @repo.revisions << Revision.new(10, :loc => 1)
+    @gruff_line_object.should_receive(:labels=).with({0=>"9", 1=>"10"})
+
+    @repo.chart_loc_per_commit
+  end
 end
