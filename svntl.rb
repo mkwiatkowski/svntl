@@ -128,6 +128,10 @@ class Array
     return [[], []] if empty?
     transpose
   end
+
+  def map_with method
+    map { |element| element.send(method) }
+  end
 end
 
 class Hash
@@ -159,7 +163,7 @@ module SvnTimeline
       labels, data = yield(revisions).sort.keys_and_values
 
       @chart.data "LOC", data
-      @chart.labels = max_labels.labels_from labels
+      @chart.labels = max_labels.labels_from labels.map_with(:to_s)
 
       @chart.title = (options[:title] or @url)
       @chart.hide_dots = true
@@ -176,13 +180,13 @@ module SvnTimeline
 
     def chart_loc_per_commit options={}
       chart_loc(20, options) do |revisions|
-        revisions.map { |rev| [rev.number.to_s, rev.loc] }
+        revisions.map { |rev| [rev.number, rev.loc] }
       end
     end
 
     def chart_loc_per_day options={}
       chart_loc(10, options) do |revisions|
-        revisions.by_day.map { |date, revs| [date.to_s, revs.last.loc] }
+        revisions.by_day.map { |date, revs| [date, revs.last.loc] }
       end
     end
 
