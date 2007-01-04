@@ -45,9 +45,9 @@ module SvnTimeline
   end
 
   class ListOfRevisions < Array
-    def initialize
+    def initialize options={}
       # Each repository have revision 0 with zero LOC.
-      self << Revision.new(0)
+      self << Revision.new(0) if not options[:without_revision_zero]
     end
 
     def number
@@ -60,6 +60,14 @@ module SvnTimeline
       inject(Hash.new {[]}) do |hash, rev|
         hash[rev.date] <<= rev
         hash
+      end
+    end
+
+    # Return new ListOfRevisions with trailing empty revisions removed.
+    def without_trailing_empty
+      inject(ListOfRevisions.new(:without_revision_zero => true)) do |revisions, rev|
+        revisions << rev if not revisions.empty? or rev.loc > 0
+        revisions
       end
     end
   end
@@ -92,31 +100,29 @@ module SvnTimeline
     end
 
     def init_revisions
-      begin
-        doc = REXML::Document.new execute_command("svn log --xml #{@url}")
+      doc = REXML::Document.new execute_command("svn log --xml #{@url}")
 
-        doc.each_element("/log/logentry") do |logentry|
-          @revisions << Revision.new(logentry.attributes["revision"].to_i,
-                                     :date => Date.strptime(logentry.text("date")))
-        end
-
-        @revisions.sort_by! :number
-
-        @revisions.each_cons(2) do |r1, r2|
-          begin
-            doc = execute_command("svn diff -r#{r1.number}:#{r2.number} --diff-cmd \"diff\" -x \"--normal\" #{@url}")
-            removed = doc.grep(/^</).size
-            added = doc.grep(/^>/).size
-            r2.loc = r1.loc + added - removed
-          rescue IOError
-            # Protect from situation when checking for file which didn't exist in rev. 0.
-            raise unless r1.number == 0
-            r2.loc = get_loc_of_revision r2.number
-          end
-        end
-      rescue IOError
-        raise SubversionError, "No such repository."
+      doc.each_element("/log/logentry") do |logentry|
+        @revisions << Revision.new(logentry.attributes["revision"].to_i,
+                                   :date => Date.strptime(logentry.text("date")))
       end
+
+      @revisions.sort_by! :number
+
+      @revisions.each_cons(2) do |r1, r2|
+        begin
+          doc = execute_command("svn diff -r#{r1.number}:#{r2.number} --diff-cmd \"diff\" -x \"--normal\" #{@url}")
+          removed = doc.grep(/^</).size
+          added = doc.grep(/^>/).size
+          r2.loc = r1.loc + added - removed
+        rescue IOError
+          # Protect from situation when checking for file which didn't exist in rev. 0.
+          raise unless r1.number == 0
+          r2.loc = get_loc_of_revision r2.number
+        end
+      end
+    rescue IOError
+      raise SubversionError, "No such repository."
     end
   end
 end
@@ -152,7 +158,7 @@ end
 module SvnTimeline
   class SubversionRepository
     def chart_loc max_labels, options={}
-      revisions = trim_zeroes(@revisions)
+      revisions = @revisions.without_trailing_empty
 
       if options[:small]
         @chart = Gruff::Line.new 200
@@ -186,16 +192,23 @@ module SvnTimeline
 
     def chart_loc_per_day options={}
       chart_loc(10, options) do |revisions|
-        revisions.by_day.map { |date, revs| [date, revs.last.loc] }
-      end
-    end
+        rev_by_day = revisions.by_day
 
-    private
-    def trim_zeroes revisions
-      while not revisions.empty? and revisions[0].loc == 0
-        revisions = revisions.slice(1, revisions.size - 1)
+        if not revisions.empty?
+          last_touched_rev = revisions.first
+
+          # Insert all intermediate dates.
+          revisions.first.date.step(revisions.last.date, 1) do |date|
+            if rev_by_day.include? date
+              last_touched_rev = rev_by_day[date].last
+            else
+              rev_by_day[date] <<= Revision.new(-1, :loc => last_touched_rev.loc)
+            end
+          end
+        end
+        
+        rev_by_day.map { |date, revs| [date, revs.last.loc] }
       end
-      revisions
     end
   end
 end

@@ -52,4 +52,19 @@ context "Method chart_loc_per_day" do
 
     @repo.chart_loc_per_day
   end
+
+  specify "should set labels to {0=>\"2006-01-20\", 1=>\"2006-01-21\", 2=>\"2006-01-22\"} for repository with two revisions from 20 and 22 January 2006" do
+    @repo.revisions_append_with_date [ Date.new(2006, 01, 20), Date.new(2006, 01, 22) ]
+    @gruff_line_object.should_receive(:labels=).with({ 0=>"2006-01-20", 1=>"2006-01-21", 2=>"2006-01-22" })
+
+    @repo.chart_loc_per_day
+  end
+
+  specify "should call chart.data('LOC', [10, 10, 20]) for repository with two revisions from 20 and 22 January 2006, first having 10 LOC and second 20 LOC" do
+    @repo.revisions << Revision.new(1, :loc => 10, :date => Date.new(2006, 1, 20))
+    @repo.revisions << Revision.new(2, :loc => 20, :date => Date.new(2006, 1, 22))
+    @gruff_line_object.should_receive(:data).with('LOC', [10, 10, 20])
+
+    @repo.chart_loc_per_day
+  end
 end
