@@ -2,7 +2,13 @@ require 'date'
 require 'enumerator'
 require 'rexml/document'
 
-require 'rubygems'
+# Ignore non-existent rubygems.
+begin
+  require 'rubygems'
+rescue LoadError
+  nil
+end
+
 begin
   require 'gruff'
 rescue LoadError
