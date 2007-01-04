@@ -15,8 +15,8 @@ end
 ######################################################################
 # Data retrieval part.
 module Enumerable
-  def sort_by! symbol
-    sort! { |a, b| a.send(symbol) <=> b.send(symbol) }
+  def sort_by! method
+    sort! { |a, b| a.send(method) <=> b.send(method) }
   end
 end
 
