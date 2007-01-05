@@ -4,12 +4,14 @@
 
   * [http://www.ruby-lang.org/ Ruby]
   * [http://nubyonrails.com/pages/gruff Gruff]
+  * [http://codeforpeople.com/lib/ruby/open4/ Open4]
 
 == Development requirements ==
 
   * All user requirements
   * [http://rake.rubyforge.org/ Rake]
-  * [http://rspec.rubyforge.org/ RSpec]
-  * [http://eigenclass.org/hiki.rb?rcov RCov] >= 7.0
+  * [http://rspec.rubyforge.org/ RSpec] >= 0.7
+  * [http://eigenclass.org/hiki.rb?rcov RCov] >= 0.7
   * [http://builder.rubyforge.org/ XML Builder]
+
 
