@@ -5,7 +5,7 @@
 Make a command line tool available for users. The simplest case should be {{{"svntl SVN_URL"}}} to generate all graphs.
 
 || *Task* || *Description* || *Status* ||
-|| Silence stderr of `SvnTimeline::execute_command` || *``* passes stderr through, as well as *IO.popen*, while *Open3.popen3* returns invalid exit code. || todo ||
+|| Silence stderr of `SvnTimeline::execute_command` || *``* passes stderr through, as well as *IO.popen*, while *Open3.popen3* returns invalid exit code. || completed (rev. 49) ||
 || HTML output that gathers all charts together || Using [http://www.ruby-doc.org/stdlib/libdoc/erb/rdoc/ erb]. || todo ||
 || Command line interface || || todo ||
 || Create ruby gem || Remember about gruff requirement. || todo ||
