@@ -27,6 +27,20 @@ class SubversionRepositoryMock < SubversionRepository
   end
 end
 
+module Spec::Expectations::ProcExpectations
+  def should_exit_with_code code
+    should_satisfy do |proc|
+      begin
+        proc.call
+        false
+      rescue SystemExit => ex
+        ex.status.should == code
+        true
+      end
+    end
+  end
+end
+
 module Spec::Runner::ContextEval::ModuleMethods
   def chart_spec options={}
     setup do

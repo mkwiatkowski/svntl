@@ -9,14 +9,21 @@ rescue LoadError
   nil
 end
 
-begin
-  require 'gruff'
-rescue LoadError
-  $stderr.puts "You don't seem to have Gruff library installed. It is needed for chart generation.",
-               "To install with Ruby Gems:",
-               "  sudo gem install gruff",
-               "If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=1044 ."
+# Require a gem and provide usefull error message if require wasn't successful.
+def save_require module_name, reason, rubyforge_id
+  begin
+    require module_name
+  rescue LoadError
+    $stderr.puts "You don't seem to have #{module_name.capitalize} library installed. It is needed for #{reason}.",
+                 "To install with Ruby Gems:",
+                 "  sudo gem install #{module_name}",
+    "If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=#{rubyforge_id} ."
+    exit 1
+  end
 end
+
+save_require 'gruff', 'chart generation', 1044
+save_require 'open4', 'running `svn` command', 1024
 
 ######################################################################
 # Data retrieval part.
@@ -30,13 +37,14 @@ module SvnTimeline
   # Execute given command, returning its output on success.
   # On error raise IOError.
   def execute_command command
-    stdout = `#{command}`
-
-    if not $?.success?
-      raise IOError
+    output = ''
+    Open4::popen4(command) do |pid, stdin, stdout, stderr|
+      output = stdout.read
     end
 
-    return stdout
+    raise IOError unless $?.success?
+
+    return output
   end
 
   class Revision

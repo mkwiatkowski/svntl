@@ -25,7 +25,7 @@ context "Module svntl" do
     Kernel.restore! :require
   end
 
-  def capture_stderr
+  def stderr_of
     captured = StringIO.new
     orig_stderr, $stderr = $stderr, captured
     yield
@@ -35,9 +35,17 @@ context "Module svntl" do
     $stderr = orig_stderr
   end
 
+  def without_exit
+    begin
+      yield
+    rescue SystemExit
+      nil
+    end
+  end
+
   specify "should not allow LoadError to be throw to user's face if gruff is not present" do
     @nonexisting_modules = ['gruff']
-    lambda { capture_stderr { load 'svntl.rb' } }.should_not_raise LoadError
+    lambda { stderr_of { without_exit { load 'svntl.rb' } } }.should_not_raise LoadError
   end
 
   specify "should show nice info for user when gruff is not present" do
@@ -49,22 +57,47 @@ context "Module svntl" do
       If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=1044 .
     EOV
 
-    stderr = capture_stderr { load 'svntl.rb' }
-    stderr.should == expected.strip_indentation
+    stderr_of { without_exit { load 'svntl.rb' } }.should == expected.strip_indentation
+  end
+
+  specify "should exit with error code 1 when gruff is not present" do
+    @nonexisting_modules = ['gruff']
+    lambda { stderr_of { load 'svntl.rb' } }.should_exit_with_code 1
+  end
+
+  specify "should not allow LoadError to be throw to user's face if open4 is not present" do
+    @nonexisting_modules = ['open4']
+    lambda { stderr_of { without_exit { load 'svntl.rb' } } }.should_not_raise LoadError
+  end
+
+  specify "should show nice info for user when open4 is not present" do
+    @nonexisting_modules = ['open4']
+    expected = <<-EOV
+      You don't seem to have Open4 library installed. It is needed for running `svn` command.
+      To install with Ruby Gems:
+        sudo gem install open4
+      If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=1024 .
+    EOV
+
+    stderr_of { without_exit { load 'svntl.rb' } }.should == expected.strip_indentation
+  end
+
+  specify "should exit with error code 1 when open4 is not present" do
+    @nonexisting_modules = ['open4']
+    lambda { stderr_of { load 'svntl.rb' } }.should_exit_with_code 1
   end
 
   specify "should not raise LoadError when rubygems are not present" do
     @nonexisting_modules = ['rubygems']
     @ignored_modules = ['gruff']
 
-    lambda { capture_stderr { load 'svntl.rb' } }.should_not_raise LoadError
+    lambda { stderr_of { load 'svntl.rb' } }.should_not_raise LoadError
   end
 
   specify "should silently ignore non-existent rubygems" do
     @nonexisting_modules = ['rubygems']
     @ignored_modules = ['gruff']
 
-    stderr = capture_stderr { load 'svntl.rb' }
-    stderr.should == ''
+    stderr_of { load 'svntl.rb' }.should == ''
   end
 end
