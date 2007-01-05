@@ -29,13 +29,15 @@ module Spec::Runner::ContextEval::ModuleMethods
         options = { :loc => {}, :datetime => {}, :entries => Hash.new({}) }.merge!(options)
         existing_root_url = 'file:///existing/repository'
         existing_trunk_url = "#{existing_root_url}/trunk"
+        existing_file_url = "#{existing_trunk_url}/module.rb"
+
+        existing_urls_opt = [existing_root_url, existing_trunk_url, existing_file_url].map { |url| Regexp.escape(url) }.join('|')
 
         case command
-        when "svn diff -r0:1 --diff-cmd \"diff\" -x \"--normal\" #{existing_trunk_url}"
-            # "trunk/" didn't exist during rev. 0, thus we're raising an exception.
+        when /^svn diff -r0:1 --diff-cmd \"diff\" -x \"--normal\" (#{existing_file_url}|#{existing_trunk_url})$/
+            # "trunk/" and "module.rb" didn't exist during rev. 0, thus we're raising an exception.
             raise IOError
-        when /svn diff -r(\d+):(\d+) --diff-cmd "diff" -x "--normal" #{existing_trunk_url}/,
-             /svn diff -r(\d+):(\d+) --diff-cmd "diff" -x "--normal" #{existing_root_url}/
+        when /^svn diff -r(\d+):(\d+) --diff-cmd "diff" -x "--normal" (#{existing_urls_opt})$/
           # Each repository have implicit revision no 0 with 0 LOC.
           loc = options[:loc].merge!({ 0 => 0 })
           loc_start = (loc[$1.to_i] or 0)
@@ -53,8 +55,7 @@ module Spec::Runner::ContextEval::ModuleMethods
           end
 
           diff_document
-        when "svn log --xml #{existing_trunk_url}",
-             "svn log --xml #{existing_root_url}"
+        when /^svn log --xml (#{existing_urls_opt})$/
           xml_document = ""
 
           xml = Builder::XmlMarkup.new :target => xml_document
@@ -74,8 +75,7 @@ module Spec::Runner::ContextEval::ModuleMethods
           end
 
           xml_document
-        when /svn ls -R --xml -r(\d+) (#{existing_trunk_url})/,
-             /svn ls -R --xml -r(\d+) (#{existing_root_url})/
+        when /^svn ls -R --xml -r(\d+) (#{existing_urls_opt})$/
           url_used = $2
           revision = $1.to_i
           files_in_revision = options[:entries][revision].keys
@@ -98,8 +98,7 @@ module Spec::Runner::ContextEval::ModuleMethods
           end
 
           xml_document
-        when /svn cat -r(\d+) #{existing_trunk_url}\/(.*)/,
-             /svn cat -r(\d+) #{existing_root_url}\/(.*)/
+        when /^svn cat -r(\d+) (?:#{existing_trunk_url}|#{existing_root_url})\/(.*)$/
           filename = $2
           revision = $1.to_i
           options[:entries][revision][filename] or raise IOError
@@ -325,5 +324,19 @@ context "Repository with two revisions, one from 28 Dec 2006, other from 6 Mar 2
 
   specify "should report 6 Mar 2005 date of revision(2)" do
     @repo.revision(2).date.should == Date.new(2005, 3, 6)
+  end
+end
+
+context "File in a repository" do
+  mock_svn :loc => { 1 => 10 },
+           :entries => { 1 => { 'module.rb' => 10.lines_of_code } }
+
+  specify "should not raise SubversionError on SubversionRepository.new" do
+    lambda { @repo = SubversionRepository.new "file:///existing/repository/trunk/module.rb" }.should_not_raise SubversionError
+  end
+
+  specify "should report 10 LOC for revision(1)" do
+    @repo = SubversionRepository.new "file:///existing/repository/trunk/module.rb"
+    @repo.revision(1).loc.should == 10
   end
 end
