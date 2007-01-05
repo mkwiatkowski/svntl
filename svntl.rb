@@ -108,8 +108,19 @@ module SvnTimeline
       # Calling recursive ls to instantly get full list of files.
       doc = REXML::Document.new execute_command("svn ls -R --xml -r#{number} #{@url}")
 
-      doc.get_elements("/lists/list/entry[@kind='file']/name").inject(0) do |loc, path|
-        loc += execute_command("svn cat -r#{number} #{@url}/#{path.text}").to_a.size
+      # If there is only one entry it may be the case when URL points to
+      # the file itself. SVN gives us no hints here, so let's try both options.
+      if doc.get_elements("/lists/list/entry").length == 1
+        begin
+          execute_command("svn cat -r#{number} #{@url}").to_a.size
+        rescue IOError
+          name = doc.get_elements("/lists/list/entry[@kind='file']/name").first.text
+          execute_command("svn cat -r#{number} #{@url}/#{name}").to_a.size
+        end
+      else
+        doc.get_elements("/lists/list/entry[@kind='file']/name").inject(0) do |loc, path|
+          loc += execute_command("svn cat -r#{number} #{@url}/#{path.text}").to_a.size
+        end
       end
     end
 
