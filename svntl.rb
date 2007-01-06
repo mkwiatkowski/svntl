@@ -234,4 +234,21 @@ module SvnTimeline
       end
     end
   end
+
+  def generate_charts url, options={}
+    repository = SubversionRepository.new url
+    Dir.mkdir('timeline') unless File.exist?('timeline')
+
+    call_chart = lambda do |chart, small, suffix|
+      chart_options = { :file => "timeline/#{chart}#{suffix}.png" }
+      chart_options[:title] = options[:title] if options[:title]
+      chart_options[:small] = true if small
+      repository.send "chart_#{chart}", chart_options
+    end
+
+    ['loc_per_commit', 'loc_per_day'].each do |chart|
+      call_chart.call chart, false, ''
+      call_chart.call chart, true, '_small'
+    end
+  end
 end

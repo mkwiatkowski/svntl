@@ -8,6 +8,8 @@ class String
 end
 
 context "Module svntl" do
+  include ContextHelper
+
   setup do
     @nonexisting_modules = []
     @ignored_modules = []
@@ -35,17 +37,9 @@ context "Module svntl" do
     $stderr = orig_stderr
   end
 
-  def without_exit
-    begin
-      yield
-    rescue SystemExit
-      nil
-    end
-  end
-
   specify "should not allow LoadError to be throw to user's face if gruff is not present" do
     @nonexisting_modules = ['gruff']
-    lambda { stderr_of { without_exit { load 'svntl.rb' } } }.should_not_raise LoadError
+    lambda { stderr_of { without_exception(SystemExit) { load 'svntl.rb' } } }.should_not_raise LoadError
   end
 
   specify "should show nice info for user when gruff is not present" do
@@ -57,7 +51,7 @@ context "Module svntl" do
       If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=1044 .
     EOV
 
-    stderr_of { without_exit { load 'svntl.rb' } }.should == expected.strip_indentation
+    stderr_of { without_exception(SystemExit) { load 'svntl.rb' } }.should == expected.strip_indentation
   end
 
   specify "should exit with error code 1 when gruff is not present" do
@@ -67,7 +61,7 @@ context "Module svntl" do
 
   specify "should not allow LoadError to be throw to user's face if open4 is not present" do
     @nonexisting_modules = ['open4']
-    lambda { stderr_of { without_exit { load 'svntl.rb' } } }.should_not_raise LoadError
+    lambda { stderr_of { without_exception(SystemExit) { load 'svntl.rb' } } }.should_not_raise LoadError
   end
 
   specify "should show nice info for user when open4 is not present" do
@@ -79,7 +73,7 @@ context "Module svntl" do
       If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=1024 .
     EOV
 
-    stderr_of { without_exit { load 'svntl.rb' } }.should == expected.strip_indentation
+    stderr_of { without_exception(SystemExit) { load 'svntl.rb' } }.should == expected.strip_indentation
   end
 
   specify "should exit with error code 1 when open4 is not present" do

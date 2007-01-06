@@ -157,3 +157,11 @@ module Spec::Runner::ContextEval::ModuleMethods
     end
   end
 end
+
+module ContextHelper
+  def without_exception ex
+    yield
+  rescue ex
+    nil
+  end
+end

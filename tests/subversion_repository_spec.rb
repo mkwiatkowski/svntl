@@ -28,7 +28,7 @@ module Spec::Runner::ContextEval::ModuleMethods
       repository_url = Regexp.escape url
 
       SubversionRepository.override!(:execute_command).with do |command|
-        options = { :datetime => {}, :dont_exist_in_rev_0 => false, :entries => Hash.new({}), :loc => {} }.merge(options)
+        options = { :datetime => {}, :entries => Hash.new({}), :loc => {} }.merge(options)
 
         case command
         when /^svn diff -r(\d+):(\d+) --diff-cmd "diff" -x "--normal" #{repository_url}$/
@@ -96,9 +96,11 @@ module Spec::Runner::ContextEval::ModuleMethods
 
           xml_document
         when /^svn cat -r(\d+) #{repository_url}$/
+          raise IOError unless options[:url_points_to_file]
           revision = $1.to_i
           options[:entries][revision].values.first
         when /^svn cat -r(\d+) #{repository_url}\/(.*)$/
+          raise IOError if options[:url_points_to_file]
           filename = $2
           revision = $1.to_i
           options[:entries][revision][filename] or raise IOError
@@ -341,6 +343,7 @@ end
 context "File in a repository" do
   mock_svn "file:///existing/repository/trunk/module.rb",
            :dont_exist_in_rev_0 => true,
+           :url_points_to_file => true,
            :loc => { 1 => 10 },
            :entries => { 1 => { 'module.rb' => 10.lines_of_code } }
 
