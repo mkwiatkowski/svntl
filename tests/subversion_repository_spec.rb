@@ -23,23 +23,21 @@ def keys_of *hashes
 end
 
 module Spec::Runner::ContextEval::ModuleMethods
-  def mock_svn options={}
+  def mock_svn url, options={}
     setup do
-      SubversionRepository.override!(:execute_command).with do |command|
-        options = { :loc => {}, :datetime => {}, :entries => Hash.new({}) }.merge!(options)
-        existing_root_url = 'file:///existing/repository'
-        existing_trunk_url = "#{existing_root_url}/trunk"
-        existing_file_url = "#{existing_trunk_url}/module.rb"
+      repository_url = Regexp.escape url
 
-        existing_urls_opt = [existing_root_url, existing_trunk_url, existing_file_url].map { |url| Regexp.escape(url) }.join('|')
+      SubversionRepository.override!(:execute_command).with do |command|
+        options = { :datetime => {}, :dont_exist_in_rev_0 => false, :entries => Hash.new({}), :loc => {} }.merge(options)
 
         case command
-        when /^svn diff -r0:1 --diff-cmd \"diff\" -x \"--normal\" (#{existing_file_url}|#{existing_trunk_url})$/
-            # "trunk/" and "module.rb" didn't exist during rev. 0, thus we're raising an exception.
+        when /^svn diff -r(\d+):(\d+) --diff-cmd "diff" -x "--normal" #{repository_url}$/
+          if $1.to_i == 0 and options[:dont_exist_in_rev_0]
             raise IOError
-        when /^svn diff -r(\d+):(\d+) --diff-cmd "diff" -x "--normal" (#{existing_urls_opt})$/
-          # Each repository have implicit revision no 0 with 0 LOC.
-          loc = options[:loc].merge!({ 0 => 0 })
+          end
+
+          # Each repository have implicit revision 0 with 0 LOC.
+          loc = options[:loc].merge({ 0 => 0 })
           loc_start = (loc[$1.to_i] or 0)
           loc_end = (loc[$2.to_i] or 0)
 
@@ -55,7 +53,7 @@ module Spec::Runner::ContextEval::ModuleMethods
           end
 
           diff_document
-        when /^svn log --xml (#{existing_urls_opt})$/
+        when /^svn log --xml #{repository_url}$/
           xml_document = ""
 
           xml = Builder::XmlMarkup.new :target => xml_document
@@ -75,8 +73,7 @@ module Spec::Runner::ContextEval::ModuleMethods
           end
 
           xml_document
-        when /^svn ls -R --xml -r(\d+) (#{existing_urls_opt})$/
-          url_used = $2
+        when /^svn ls -R --xml -r(\d+) #{repository_url}$/
           revision = $1.to_i
           files_in_revision = options[:entries][revision].keys
 
@@ -85,7 +82,7 @@ module Spec::Runner::ContextEval::ModuleMethods
           xml = Builder::XmlMarkup.new :target => xml_document
           xml.instruct!
           xml.lists do
-            xml.list :path => url_used do
+            xml.list :path => repository_url do
               files_in_revision.each do |file|
                 xml.entry :kind => 'file' do 
                   xml.name file
@@ -98,7 +95,10 @@ module Spec::Runner::ContextEval::ModuleMethods
           end
 
           xml_document
-        when /^svn cat -r(\d+) (?:#{existing_trunk_url}|#{existing_root_url})\/(.*)$/
+        when /^svn cat -r(\d+) #{repository_url}$/
+          revision = $1.to_i
+          options[:entries][revision].values.first
+        when /^svn cat -r(\d+) #{repository_url}\/(.*)$/
           filename = $2
           revision = $1.to_i
           options[:entries][revision][filename] or raise IOError
@@ -115,7 +115,7 @@ module Spec::Runner::ContextEval::ModuleMethods
 end
 
 context "Non-existing repository" do
-  mock_svn
+  mock_svn "file:///existing/repository"
 
   specify "should raise SubversionError(No such repository) during creation" do
     lambda { SubversionRepository.new "file:///do/not/exist" }.should_raise SubversionError, "No such repository."
@@ -123,7 +123,7 @@ context "Non-existing repository" do
 end
 
 context "Existing repository" do
-  mock_svn
+  mock_svn "file:///existing/repository"
 
   specify "should be created without errors" do
     lambda { SubversionRepository.new "file:///existing/repository" }.should_not_raise SubversionError
@@ -131,7 +131,7 @@ context "Existing repository" do
 end
 
 context "Empty repository" do
-  mock_svn
+  mock_svn "file:///existing/repository"
 
   setup do
     @repo = SubversionRepository.new "file:///existing/repository"
@@ -143,7 +143,8 @@ context "Empty repository" do
 end
 
 context "Repository with one revision" do
-  mock_svn :loc => { 1 => 5 }
+  mock_svn "file:///existing/repository",
+           :loc => { 1 => 5 }
 
   setup do
     @repo = SubversionRepository.new "file:///existing/repository"
@@ -175,7 +176,8 @@ context "Repository with one revision" do
 end
 
 context "Repository with three revisions" do
-  mock_svn :loc => { 1 => 5, 2 => 13, 3 => 7 }
+  mock_svn "file:///existing/repository",
+           :loc => { 1 => 5, 2 => 13, 3 => 7 }
 
   setup do
     @repo = SubversionRepository.new "file:///existing/repository"
@@ -199,7 +201,8 @@ context "Repository with three revisions" do
 end
 
 context "Repository with five scattered revisions" do
-  mock_svn :loc => { 3 => 10, 4 => 46, 10 => 32, 12 => 32, 13 => 34 }
+  mock_svn "file:///existing/repository",
+           :loc => { 3 => 10, 4 => 46, 10 => 32, 12 => 32, 13 => 34 }
 
   setup do
     @repo = SubversionRepository.new "file:///existing/repository"
@@ -239,7 +242,9 @@ context "Repository with five scattered revisions" do
 end
 
 context "/trunk of repository with two revisions and two files" do
-  mock_svn :loc => { 1 => 12, 2 => 36 },
+  mock_svn "file:///existing/repository/trunk",
+           :dont_exist_in_rev_0 => true,
+           :loc => { 1 => 12, 2 => 36 },
            :entries => { 1 => { 'README' => 4.lines_of_code, 'code.py' => 8.lines_of_code } }
 
   setup do
@@ -256,7 +261,9 @@ context "/trunk of repository with two revisions and two files" do
 end
 
 context "/trunk of repository with one revision and one file" do
-  mock_svn :loc => { 1 => 4 },
+  mock_svn "file:///existing/repository/trunk",
+           :dont_exist_in_rev_0 => true,
+           :loc => { 1 => 4 },
            :entries => { 1 => { 'README' => 4.lines_of_code } }
 
   setup do
@@ -269,7 +276,9 @@ context "/trunk of repository with one revision and one file" do
 end
 
 context "/trunk of repository with three empty revisions" do
-  mock_svn :loc => { 1 => 0, 2 => 0, 5 => 0 }
+  mock_svn "file:///existing/repository/trunk",
+           :dont_exist_in_rev_0 => true,
+           :loc => { 1 => 0, 2 => 0, 5 => 0 }
 
   setup do
     @repo = SubversionRepository.new "file:///existing/repository/trunk"
@@ -289,7 +298,8 @@ context "/trunk of repository with three empty revisions" do
 end
 
 context "Repository with three revisions of empty files" do
-  mock_svn :loc => { 1 => 0, 3 => 0, 5 => 0 },
+  mock_svn "file:///existing/repository",
+           :loc => { 1 => 0, 3 => 0, 5 => 0 },
            :entries => { 1 => {},
                          2 => { 'README' => '', 'INSTALL' => '' },
                          3 => { 'README' => '', 'INSTALL' => '', 'code.py' => '' } }
@@ -312,7 +322,8 @@ context "Repository with three revisions of empty files" do
 end
 
 context "Repository with two revisions, one from 28 Dec 2006, other from 6 Mar 2005" do
-  mock_svn :datetime => { 1 => Date.new(2006, 12, 28), 2 => Date.new(2005, 3, 6) }
+  mock_svn "file:///existing/repository",
+           :datetime => { 1 => Date.new(2006, 12, 28), 2 => Date.new(2005, 3, 6) }
 
   setup do
     @repo = SubversionRepository.new "file:///existing/repository"
@@ -328,7 +339,9 @@ context "Repository with two revisions, one from 28 Dec 2006, other from 6 Mar 2
 end
 
 context "File in a repository" do
-  mock_svn :loc => { 1 => 10 },
+  mock_svn "file:///existing/repository/trunk/module.rb",
+           :dont_exist_in_rev_0 => true,
+           :loc => { 1 => 10 },
            :entries => { 1 => { 'module.rb' => 10.lines_of_code } }
 
   specify "should not raise SubversionError on SubversionRepository.new" do
