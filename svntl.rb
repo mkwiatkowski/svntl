@@ -59,7 +59,7 @@ module SvnTimeline
   class ListOfRevisions < Array
     def initialize options={}
       # Each repository have revision 0 with zero LOC.
-      self << Revision.new(0) if not options[:without_revision_zero]
+      self << Revision.new(0) unless options[:without_revision_zero]
     end
 
     def number
@@ -217,7 +217,7 @@ module SvnTimeline
       chart_loc(10, options) do |revisions|
         rev_by_day = revisions.by_day
 
-        if not revisions.empty?
+        unless revisions.empty?
           last_touched_rev = revisions.first
 
           # Insert all intermediate dates.
