@@ -11,15 +11,13 @@ end
 
 # Require a gem and provide usefull error message if require wasn't successful.
 def save_require module_name, reason, rubyforge_id
-  begin
-    require module_name
-  rescue LoadError
-    $stderr.puts "You don't seem to have #{module_name.capitalize} library installed. It is needed for #{reason}.",
-                 "To install with Ruby Gems:",
-                 "  sudo gem install #{module_name}",
-    "If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=#{rubyforge_id} ."
-    exit 1
-  end
+  require module_name
+rescue LoadError
+  $stderr.puts "You don't seem to have #{module_name.capitalize} library installed. It is needed for #{reason}.",
+               "To install with Ruby Gems:",
+               "  sudo gem install #{module_name}",
+               "If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=#{rubyforge_id} ."
+  exit 1
 end
 
 save_require 'gruff', 'chart generation', 1044
