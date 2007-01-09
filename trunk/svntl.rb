@@ -236,11 +236,13 @@ module SvnTimeline
   end
 
   def generate_charts url, options={}
+    dirname = (options[:directory] or 'timeline')
+
     repository = SubversionRepository.new url
-    Dir.mkdir('timeline') unless File.exist?('timeline')
+    Dir.mkdir(dirname) unless File.exist?(dirname)
 
     call_chart = lambda do |chart, small, suffix|
-      chart_options = { :file => "timeline/#{chart}#{suffix}.png" }
+      chart_options = { :file => File.join(dirname, "#{chart}#{suffix}.png") }
       chart_options[:title] = options[:title] if options[:title]
       chart_options[:small] = true if small
       repository.send "chart_#{chart}", chart_options
