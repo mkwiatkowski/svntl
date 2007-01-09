@@ -16,10 +16,6 @@ class Module
       @procedure = procedure
     end
 
-    def and_return value
-      @procedure.call lambda { value }
-    end
-
     def with &block
       @procedure.call block
     end
