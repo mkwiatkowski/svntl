@@ -1,4 +1,5 @@
 require 'date'
+require 'erb'
 require 'enumerator'
 require 'rexml/document'
 
@@ -233,6 +234,10 @@ module SvnTimeline
         rev_by_day.map { |date, revs| [date, revs.last.loc] }
       end
     end
+
+    def get_binding
+      binding
+    end
   end
 
   def generate_charts url, options={}
@@ -251,6 +256,24 @@ module SvnTimeline
     ['loc_per_commit', 'loc_per_day'].each do |chart|
       call_chart.call chart, false, ''
       call_chart.call chart, true, '_small'
+    end
+  end
+end
+
+######################################################################
+# Generation of HTML pages.
+module SvnTimeline
+  def read_file path
+    File.open(path) { |file| file.read }
+  end
+
+  def generate_html url
+    repository = SubversionRepository.new url
+    Dir.mkdir('timeline') unless File.exist?('timeline')
+
+    template = ERB.new(read_file('templates/index.rhtml'))
+    File.open('timeline/index.html', 'w') do |file|
+      file.write(template.result(repository.get_binding))
     end
   end
 end
