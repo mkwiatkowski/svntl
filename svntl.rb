@@ -272,6 +272,7 @@ module SvnTimeline
     Dir.mkdir('timeline') unless File.exist?('timeline')
 
     template = ERB.new(read_file('templates/index.rhtml'))
+
     File.open('timeline/index.html', 'w') do |file|
       file.write(template.result(repository.get_binding))
     end

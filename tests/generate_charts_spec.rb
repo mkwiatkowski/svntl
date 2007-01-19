@@ -86,7 +86,7 @@ context "generate_charts method for existing repository" do
 
   specify "should call chart generation methods with `file` argument equal to `dir\\chart.png` in systems which has backslash as directory separator" do
     File.stub!(:exist?).and_return(false)
-    (class << File; self; end).override!(:join).with do |*strings|
+    File.metaclass.override!(:join).with do |*strings|
       strings.join("\\")
     end
     Dir.stub!(:mkdir)
@@ -98,6 +98,6 @@ context "generate_charts method for existing repository" do
 
     generate_charts 'file:///existing/repository', :directory => 'dir'
 
-    (class << File; self; end).restore! :join
+    File.metaclass.restore! :join
   end
 end

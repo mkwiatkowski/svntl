@@ -9,6 +9,12 @@
 # To restore the original Kernel#system, do:
 #   Kernel.restore! :system
 #
+# When you want to override a class method, use metaclass helper:
+#   File.metaclass.override!(:open).with { |filename, mode| puts "Opening #{filename} in #{mode}." }
+#
+# Remember to restore with metaclass as well:
+#   File.metaclass.restore! :open
+#
 
 class Module
   class Stub
@@ -18,6 +24,10 @@ class Module
 
     def with &block
       @procedure.call block
+    end
+
+    def and_return value
+      @procedure.call lambda {  value }
     end
   end
 
@@ -30,5 +40,11 @@ class Module
 
   def restore! method
     alias_method method, "orig_#{method}"
+  end
+end
+
+class Object
+  def metaclass
+    class << self; self; end
   end
 end
