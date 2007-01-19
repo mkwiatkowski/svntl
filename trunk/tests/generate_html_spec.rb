@@ -66,6 +66,7 @@ context "generate_html method for existing repository" do
   specify "should call File.open with default index.html template path to read the template" do
     File.stub!(:exist?).and_return(false)
     File.stub!(:open).and_yield(StringIO.new)
+
     File.should_receive(:open).with('templates/index.rhtml').and_yield(StringIO.new)
 
     generate_html 'file:///existing/repository'
@@ -84,14 +85,15 @@ context "generate_html method for existing repository" do
     File.stub!(:exist?).and_return(false)
     File.stub!(:open).and_yield(StringIO.new)
 
-    @erb_object = mock 'erb_object', :null_object => true
-    ERB.stub!(:new).and_return(@erb_object)
+    erb_object = mock('erb_object', :null_object => true)
+    ERB.metaclass.override!(:new).and_return(erb_object)
 
-    @erb_object.should_receive(:result) do |binding|
-      binding.should_be_a_kind_of Binding
+    erb_object.should_receive(:result) do |b|
+      b.should_be_a_kind_of Binding
     end
 
     generate_html 'file:///existing/repository'
+    ERB.metaclass.restore! :new
   end
 
   specify "should call repository get_binding method" do
