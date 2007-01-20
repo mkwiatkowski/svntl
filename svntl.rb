@@ -235,27 +235,22 @@ module SvnTimeline
       end
     end
 
-    def get_binding
-      binding
-    end
-  end
+    def generate_charts options={}
+      dirname = (options[:directory] or 'timeline')
 
-  def generate_charts url, options={}
-    dirname = (options[:directory] or 'timeline')
+      Dir.mkdir(dirname) unless File.exist?(dirname)
 
-    repository = SubversionRepository.new url
-    Dir.mkdir(dirname) unless File.exist?(dirname)
+      call_chart = lambda do |chart, small, suffix|
+        chart_options = { :file => File.join(dirname, "#{chart}#{suffix}.png") }
+        chart_options[:title] = options[:title] if options[:title]
+        chart_options[:small] = true if small
+        send "chart_#{chart}", chart_options
+      end
 
-    call_chart = lambda do |chart, small, suffix|
-      chart_options = { :file => File.join(dirname, "#{chart}#{suffix}.png") }
-      chart_options[:title] = options[:title] if options[:title]
-      chart_options[:small] = true if small
-      repository.send "chart_#{chart}", chart_options
-    end
-
-    ['loc_per_commit', 'loc_per_day'].each do |chart|
-      call_chart.call chart, false, ''
-      call_chart.call chart, true, '_small'
+      ['loc_per_commit', 'loc_per_day'].each do |chart|
+        call_chart.call chart, false, ''
+        call_chart.call chart, true, '_small'
+      end
     end
   end
 end
@@ -267,14 +262,15 @@ module SvnTimeline
     File.open(path) { |file| file.read }
   end
 
-  def generate_html url
-    repository = SubversionRepository.new url
-    Dir.mkdir('timeline') unless File.exist?('timeline')
+  class SubversionRepository
+    def generate_html
+      Dir.mkdir('timeline') unless File.exist?('timeline')
 
-    template = ERB.new(read_file('templates/index.rhtml'))
+      template = ERB.new(read_file('templates/index.rhtml'))
 
-    File.open('timeline/index.html', 'w') do |file|
-      file.write(template.result(repository.get_binding))
+      File.open('timeline/index.html', 'w') do |file|
+        file.write(template.result(binding))
+      end
     end
   end
 end
