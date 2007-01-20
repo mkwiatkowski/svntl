@@ -179,33 +179,30 @@ class Integer
   end
 end
 
+class String
+  def without_prefix delimiter='_'
+    slice /[^#{delimiter}]+#{delimiter}(.*)/, 1
+  end
+end
+
 module SvnTimeline
   class SubversionRepository
-    def chart_loc max_labels, options={}
-      revisions = @revisions.without_trailing_empty
+    def generate_charts options={}
+      dirname = (options[:directory] or 'timeline')
 
-      if options[:small]
-        @chart = Gruff::Line.new 200
-      else
-        @chart = Gruff::Line.new
+      Dir.mkdir(dirname) unless File.exist?(dirname)
+
+      call_chart = lambda do |chart, small, suffix|
+        chart_options = { :file => File.join(dirname, "#{chart.without_prefix}#{suffix}.png") }
+        chart_options[:title] = options[:title] if options[:title]
+        chart_options[:small] = true if small
+        send chart, chart_options
       end
 
-      labels, data = yield(revisions).sort.keys_and_values
-
-      @chart.data "LOC", data
-      @chart.labels = max_labels.labels_from labels.map_with(:to_s)
-
-      @chart.title = (options[:title] or @url)
-      @chart.hide_dots = true
-      @chart.hide_legend = true
-      @chart.marker_font_size = 10
-
-      if options[:small]
-        @chart.hide_line_markers = true
-        @chart.title_font_size = 50
+      chart_methods.each do |chart|
+        call_chart.call chart, false, ''
+        call_chart.call chart, true, '_small'
       end
-
-      @chart.write((options[:file] or 'loc.png'))
     end
 
     def chart_loc_per_commit options={}
@@ -235,22 +232,36 @@ module SvnTimeline
       end
     end
 
-    def generate_charts options={}
-      dirname = (options[:directory] or 'timeline')
+    private
+    def chart_loc max_labels, options={}
+      revisions = @revisions.without_trailing_empty
 
-      Dir.mkdir(dirname) unless File.exist?(dirname)
-
-      call_chart = lambda do |chart, small, suffix|
-        chart_options = { :file => File.join(dirname, "#{chart}#{suffix}.png") }
-        chart_options[:title] = options[:title] if options[:title]
-        chart_options[:small] = true if small
-        send "chart_#{chart}", chart_options
+      if options[:small]
+        @chart = Gruff::Line.new 200
+      else
+        @chart = Gruff::Line.new
       end
 
-      ['loc_per_commit', 'loc_per_day'].each do |chart|
-        call_chart.call chart, false, ''
-        call_chart.call chart, true, '_small'
+      labels, data = yield(revisions).sort.keys_and_values
+
+      @chart.data "LOC", data
+      @chart.labels = max_labels.labels_from labels.map_with(:to_s)
+
+      @chart.title = (options[:title] or @url)
+      @chart.hide_dots = true
+      @chart.hide_legend = true
+      @chart.marker_font_size = 10
+
+      if options[:small]
+        @chart.hide_line_markers = true
+        @chart.title_font_size = 50
       end
+
+      @chart.write((options[:file] or 'loc.png'))
+    end
+
+    def chart_methods
+      public_methods.grep /^chart_(.*)/
     end
   end
 end
