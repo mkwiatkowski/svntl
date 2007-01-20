@@ -89,15 +89,25 @@ module SvnTimeline
   end
 
   class SubversionRepository
-    attr_reader :last_revision, :revisions
+    #
+    # Name of the project held in this repository.
+    # This attribute defines a title of HTML documents that will be generated.
+    #
+    attr_reader :project_name
 
-    def initialize url
+    # Full list of revisions in this repository (including virtual revision 0).
+    attr_reader :revisions
+
+    def initialize url, options={}
       @url = url
+      @project_name = (options[:project_name] or url)
+
       @revisions = ListOfRevisions.new
 
       init_revisions
     end
 
+    # Get Revision object of given number.
     def revision number
       @revisions.find { |rev| rev.number == number } or raise SubversionError, "No such revision."
     end
@@ -187,21 +197,6 @@ end
 
 module SvnTimeline
   class SubversionRepository
-    # Generate charts and save them to _directory_.
-    def generate_charts directory, options={}
-      call_chart = lambda do |chart, small, suffix|
-        chart_options = { :file => File.join(directory, "#{chart.without_prefix}#{suffix}.png") }
-        chart_options[:title] = options[:title] if options[:title]
-        chart_options[:small] = true if small
-        send chart, chart_options
-      end
-
-      chart_methods.each do |chart|
-        call_chart.call chart, false, ''
-        call_chart.call chart, true, '_small'
-      end
-    end
-
     def chart_loc_per_commit options={}
       chart_loc(20, options) do |revisions|
         revisions.map { |rev| [rev.number, rev.loc] }
@@ -244,7 +239,7 @@ module SvnTimeline
       @chart.data "LOC", data
       @chart.labels = max_labels.labels_from labels.map_with(:to_s)
 
-      @chart.title = (options[:title] or @url)
+      @chart.title = (options[:title] or @project_name)
       @chart.hide_dots = true
       @chart.hide_legend = true
       @chart.marker_font_size = 10
@@ -260,6 +255,21 @@ module SvnTimeline
     def chart_methods
       public_methods.grep /^chart_(.*)/
     end
+
+    # Generate charts and save them to _directory_.
+    def generate_charts directory, options={}
+      call_chart = lambda do |chart, small, suffix|
+        chart_options = { :file => File.join(directory, "#{chart.without_prefix}#{suffix}.png") }
+        chart_options[:title] = options[:title] if options[:title]
+        chart_options[:small] = true if small
+        send chart, chart_options
+      end
+
+      chart_methods.each do |chart|
+        call_chart.call chart, false, ''
+        call_chart.call chart, true, '_small'
+      end
+    end
   end
 end
 
@@ -271,6 +281,7 @@ module SvnTimeline
   end
 
   class SubversionRepository
+    private
     # Generate HTML files and save them to _directory_.
     def generate_html directory
       template = ERB.new(read_file('templates/index.rhtml'))

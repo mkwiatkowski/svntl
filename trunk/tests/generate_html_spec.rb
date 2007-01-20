@@ -9,6 +9,9 @@ context "Method generate_html" do
   setup do
     @repo = SubversionRepository.new 'file:///existing/repository'
 
+    # Make generate_html public to allow direct testing.
+    class << @repo ; public :generate_html ; end
+
     Dir.stub!(:mkdir)
   end
 

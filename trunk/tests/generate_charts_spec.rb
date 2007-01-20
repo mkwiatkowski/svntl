@@ -9,6 +9,9 @@ context "Method generate_charts" do
 
     @repo = SubversionRepository.new 'file:///existing/repository'
 
+    # Make generate_charts public to allow direct testing.
+    class << @repo ; public :generate_charts ; end
+
     @gruff_line_object = mock "gruff_line_object", :null_object => true
     Gruff::Line.stub!(:new).and_return(@gruff_line_object)
   end
