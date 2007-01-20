@@ -2,7 +2,7 @@ require 'svntl'
 include SvnTimeline
 
 class SubversionRepositoryMock < SubversionRepository
-  attr_accessor :url, :revisions, :last_revision
+  attr_accessor :url, :revisions, :project_name
   def initialize
     @revisions = ListOfRevisions.new
     @initial_date = Date.today
@@ -208,9 +208,9 @@ module Spec::Runner::ContextEval::ModuleMethods
       @repo.send(options[:method])
     end
 
-    specify "should set title to repository url by default" do
-      @repo.url = 'some repository URL'
-      @gruff_line_object.should_receive(:title=).with(@repo.url)
+    specify "should set title to project name by default" do
+      @repo.project_name = 'foobar project'
+      @gruff_line_object.should_receive(:title=).with(@repo.project_name)
 
       @repo.send(options[:method])
     end

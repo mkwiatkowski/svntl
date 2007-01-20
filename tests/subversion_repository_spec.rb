@@ -31,6 +31,18 @@ context "Existing repository" do
   specify "should be created without errors" do
     lambda { SubversionRepository.new "file:///existing/repository" }.should_not_raise SubversionError
   end
+
+  specify "should set project_name to repository url by default" do
+    repo = SubversionRepository.new "file:///existing/repository"
+
+    repo.project_name.should == "file:///existing/repository"
+  end
+
+  specify "should accept project_name option and set project_name attribute to the option value" do
+    repo = SubversionRepository.new "file:///existing/repository", :project_name => "Foobar"
+
+    repo.project_name.should == "Foobar"
+  end
 end
 
 context "Empty repository" do
