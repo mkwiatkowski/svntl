@@ -187,13 +187,10 @@ end
 
 module SvnTimeline
   class SubversionRepository
-    def generate_charts options={}
-      dirname = (options[:directory] or 'timeline')
-
-      Dir.mkdir(dirname) unless File.exist?(dirname)
-
+    # Generate charts and save them to _directory_.
+    def generate_charts directory, options={}
       call_chart = lambda do |chart, small, suffix|
-        chart_options = { :file => File.join(dirname, "#{chart.without_prefix}#{suffix}.png") }
+        chart_options = { :file => File.join(directory, "#{chart.without_prefix}#{suffix}.png") }
         chart_options[:title] = options[:title] if options[:title]
         chart_options[:small] = true if small
         send chart, chart_options
@@ -274,14 +271,33 @@ module SvnTimeline
   end
 
   class SubversionRepository
-    def generate_html
-      Dir.mkdir('timeline') unless File.exist?('timeline')
-
+    # Generate HTML files and save them to _directory_.
+    def generate_html directory
       template = ERB.new(read_file('templates/index.rhtml'))
 
-      File.open('timeline/index.html', 'w') do |file|
+      File.open(File.join(directory, 'index.html'), 'w') do |file|
         file.write(template.result(binding))
       end
+    end
+  end
+end
+
+######################################################################
+# Generation of full statistics data (HTML + images).
+module SvnTimeline
+  class SubversionRepository
+    #
+    # Generate all statistics files and save them to the same
+    # directory.
+    #
+    # Default directory is 'timeline', but you can override this
+    # by passing _directory_ argument.
+    #
+    def generate_statistics directory='timeline'
+      Dir.mkdir(directory) unless File.exist?(directory)
+
+      generate_charts directory
+      generate_html directory
     end
   end
 end

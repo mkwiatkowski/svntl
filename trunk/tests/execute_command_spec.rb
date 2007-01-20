@@ -1,5 +1,6 @@
-require 'svntl'
 require 'stringio'
+
+require 'svntl'
 include SvnTimeline
 
 context "execute_command" do
