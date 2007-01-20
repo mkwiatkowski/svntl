@@ -12,31 +12,13 @@ context "Method generate_html" do
     Dir.stub!(:mkdir)
   end
 
-  specify "should create directory timeline/ if repository exists" do
-    File.stub!(:exist?).and_return(false)
-    File.stub!(:open).and_yield(StringIO.new)
-
-    Dir.should_receive(:mkdir).with('timeline')
-
-    @repo.generate_html 
-  end
-
-  specify "should not try to create existing timeline/ directory" do
-    File.stub!(:exist?).and_return(true)
-    File.stub!(:open).and_yield(StringIO.new)
-
-    Dir.should_not_receive(:mkdir)
-
-    @repo.generate_html 
-  end
-
-  specify "should create file timeline/index.html if repository exists" do
+  specify "should create file timeline/index.html" do
     File.stub!(:exist?).and_return(false)
     File.stub!(:open).and_yield(StringIO.new)
 
     File.should_receive(:open).with('timeline/index.html', 'w').and_yield(StringIO.new)
 
-    @repo.generate_html 
+    @repo.generate_html 'timeline'
   end
 
   specify "should call File.open with default index.html template path to read the template" do
@@ -45,7 +27,7 @@ context "Method generate_html" do
 
     File.should_receive(:open).with('templates/index.rhtml').and_yield(StringIO.new)
 
-    @repo.generate_html 
+    @repo.generate_html 'timeline'
   end
 
   specify "should rewrite default index.html template to timeline/index.html" do
@@ -57,7 +39,7 @@ context "Method generate_html" do
 
     @output_file.should_receive(:write).with("Hello world!")
 
-    @repo.generate_html 
+    @repo.generate_html 'timeline'
   end
 
   specify "should call ERB.new with default template contents" do
@@ -66,7 +48,7 @@ context "Method generate_html" do
 
     ERB.should_receive(:new).with("Hello world!").and_return(mock('null_erb_object', :null_object => true))
 
-    @repo.generate_html 
+    @repo.generate_html 'whatever'
   end
 
   specify "should call template.result with a Binding" do
@@ -80,7 +62,7 @@ context "Method generate_html" do
       b.should_be_a_kind_of Binding
     end
 
-    @repo.generate_html 
+    @repo.generate_html 'whatever'
     ERB.metaclass.restore! :new
   end
 end
