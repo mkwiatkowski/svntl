@@ -39,7 +39,7 @@ context "Module svntl" do
 
   specify "should not allow LoadError to be throw to user's face if gruff is not present" do
     @nonexisting_modules = ['gruff']
-    lambda { stderr_of { without_exception(SystemExit) { load 'svntl.rb' } } }.should_not_raise LoadError
+    lambda { stderr_of { without_exception(SystemExit) { load 'svntl.rb', true } } }.should_not_raise LoadError
   end
 
   specify "should show nice info for user when gruff is not present" do
@@ -51,17 +51,17 @@ context "Module svntl" do
       If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=1044 .
     EOV
 
-    stderr_of { without_exception(SystemExit) { load 'svntl.rb' } }.should == expected.strip_indentation
+    stderr_of { without_exception(SystemExit) { load 'svntl.rb', true } }.should == expected.strip_indentation
   end
 
   specify "should exit with error code 1 when gruff is not present" do
     @nonexisting_modules = ['gruff']
-    lambda { stderr_of { load 'svntl.rb' } }.should_exit_with_code 1
+    lambda { stderr_of { load 'svntl.rb', true } }.should_exit_with_code 1
   end
 
   specify "should not allow LoadError to be throw to user's face if open4 is not present" do
     @nonexisting_modules = ['open4']
-    lambda { stderr_of { without_exception(SystemExit) { load 'svntl.rb' } } }.should_not_raise LoadError
+    lambda { stderr_of { without_exception(SystemExit) { load 'svntl.rb', true } } }.should_not_raise LoadError
   end
 
   specify "should show nice info for user when open4 is not present" do
@@ -73,25 +73,25 @@ context "Module svntl" do
       If you don't have Gems, install manually from http://rubyforge.org/frs/?group_id=1024 .
     EOV
 
-    stderr_of { without_exception(SystemExit) { load 'svntl.rb' } }.should == expected.strip_indentation
+    stderr_of { without_exception(SystemExit) { load 'svntl.rb', true } }.should == expected.strip_indentation
   end
 
   specify "should exit with error code 1 when open4 is not present" do
     @nonexisting_modules = ['open4']
-    lambda { stderr_of { load 'svntl.rb' } }.should_exit_with_code 1
+    lambda { stderr_of { load 'svntl.rb', true } }.should_exit_with_code 1
   end
 
   specify "should not raise LoadError when rubygems are not present" do
     @nonexisting_modules = ['rubygems']
     @ignored_modules = ['gruff']
 
-    lambda { stderr_of { load 'svntl.rb' } }.should_not_raise LoadError
+    lambda { stderr_of { load 'svntl.rb', true } }.should_not_raise LoadError
   end
 
   specify "should silently ignore non-existent rubygems" do
     @nonexisting_modules = ['rubygems']
     @ignored_modules = ['gruff']
 
-    stderr_of { load 'svntl.rb' }.should == ''
+    stderr_of { load 'svntl.rb', true }.should == ''
   end
 end

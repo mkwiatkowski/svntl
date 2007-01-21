@@ -175,8 +175,8 @@ module Spec::Runner::ContextEval::ModuleMethods
       Gruff::Line.stub!(:new).and_return(@gruff_line_object)
     end
 
-    specify "should call Gruff::Line.new to generate chart" do
-      Gruff::Line.should_receive(:new).with(:no_args).and_return(@gruff_line_object)
+    specify "should call Gruff::Line.new(500) to generate normal chart" do
+      Gruff::Line.should_receive(:new).with(500).and_return(@gruff_line_object)
 
       @repo.send(options[:method])
     end
@@ -208,9 +208,9 @@ module Spec::Runner::ContextEval::ModuleMethods
       @repo.send(options[:method])
     end
 
-    specify "should set title to project name by default" do
-      @repo.project_name = 'foobar project'
-      @gruff_line_object.should_receive(:title=).with(@repo.project_name)
+    specify "should hide the title if `title` argument is not present" do
+      @gruff_line_object.should_not_receive(:title=)
+      @gruff_line_object.should_receive(:hide_title=).with(true)
 
       @repo.send(options[:method])
     end
@@ -245,14 +245,14 @@ module Spec::Runner::ContextEval::ModuleMethods
       @repo.send(options[:method])
     end
 
-    specify "should use marker font size of 10" do
-      @gruff_line_object.should_receive(:marker_font_size=).with(10)
+    specify "should use marker font size of 15" do
+      @gruff_line_object.should_receive(:marker_font_size=).with(15)
 
       @repo.send(options[:method])
     end
 
-    specify "should create 200px width chart when :small argument is present" do
-      Gruff::Line.should_receive(:new).with(200).and_return(@gruff_line_object)
+    specify "should create 120px width chart when :small argument is present" do
+      Gruff::Line.should_receive(:new).with(120).and_return(@gruff_line_object)
 
       @repo.send(options[:method], :small => true)
     end

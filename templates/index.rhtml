@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <title><%= @project_name %> statistics</title>
+    <style type="text/css">
+      body { font-size: 12px; }
+      h1, h2, .chart { text-align: center; }
+      h1, h2 { clear: both; }
+      h2 { font-size: 18px; font-weight: bold; }
+      ul { list-style: none; }
+      li { float: left; margin: 2px; }
+      img { border: 1px solid black; }
+    </style>
+    <script type="text/javascript" language="javascript">
+      function showPic (whichpic) {
+        if (document.getElementById) {
+          document.getElementById('placeholder').src = whichpic.href;
+          document.getElementById('description').childNodes[0].nodeValue = whichpic.title;
+          return false;
+        } else {
+          return true;
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1><%= @project_name %> statistics</h1>
+
+    <ul>
+      <% AvailableCharts.each do |chart| %>
+        <li class="chart">
+          <a onclick="return showPic(this)" href="<%= chart.filename %>" title="<%= chart.title %>">
+            <img src="<%= chart.small_filename %>" alt="<%= chart.title %>" />
+          </a>
+        </li>
+      <% end %>
+    </ul>
+
+    <h2 id="description">Choose a chart to enlarge.</h2>
+    <p class="chart">
+      <img id="placeholder" alt="" />
+    </p>
+  </body>
+</html>
