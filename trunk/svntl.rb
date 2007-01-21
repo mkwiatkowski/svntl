@@ -194,7 +194,7 @@ module SvnTimeline
     Chart = Struct.new(:method, :title, :color)
     class Chart
       def filename ; "#{method}.png" ; end
-      def small_filename ; "#{method}_small.png" ; end
+      def thumbnail_filename ; "#{method}_thumbnail.png" ; end
     end
 
     AvailableCharts = [
@@ -233,7 +233,7 @@ module SvnTimeline
     def chart_loc max_labels, options={}
       revisions = @revisions.without_trailing_empty
 
-      if options[:small]
+      if options[:thumbnail]
         @chart = Gruff::Line.new 120
       else
         @chart = Gruff::Line.new 500
@@ -261,7 +261,7 @@ module SvnTimeline
       @chart.hide_legend = true
       @chart.marker_font_size = 15
 
-      if options[:small]
+      if options[:thumbnail]
         @chart.hide_line_markers = true
         @chart.title_font_size = 50
       end
@@ -274,10 +274,10 @@ module SvnTimeline
       AvailableCharts.each do |chart|
         send chart.method, :file => File.join(directory, chart.filename),
                            :color => chart.color
-        send chart.method, :file => File.join(directory, chart.small_filename),
+        send chart.method, :file => File.join(directory, chart.thumbnail_filename),
                            :color => chart.color,
                            :title => chart.title,
-                           :small => true
+                           :thumbnail => true
       end
     end
   end

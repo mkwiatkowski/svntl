@@ -16,11 +16,11 @@ context "Method generate_charts" do
     Gruff::Line.stub!(:new).and_return(@gruff_line_object)
   end
 
-  specify "should call each chart generation method twice with `file` argument set to `timeline/chart_loc_per_commit.png`, once setting `small` to true" do
+  specify "should call each chart generation method twice with `file` argument set to `timeline/chart_loc_per_commit.png`, once setting :thumbnail to true" do
     @repo.should_receive(:chart_loc_per_commit).once.with(:file => 'timeline/chart_loc_per_commit.png', :color => 'blue')
-    @repo.should_receive(:chart_loc_per_commit).once.with(:file => 'timeline/chart_loc_per_commit_small.png', :small => true, :title => 'Lines of Code per commit', :color => 'blue')
+    @repo.should_receive(:chart_loc_per_commit).once.with(:file => 'timeline/chart_loc_per_commit_thumbnail.png', :thumbnail => true, :title => 'Lines of Code per commit', :color => 'blue')
     @repo.should_receive(:chart_loc_per_day).once.with(:file => 'timeline/chart_loc_per_day.png', :color => 'red')
-    @repo.should_receive(:chart_loc_per_day).once.with(:file => 'timeline/chart_loc_per_day_small.png', :small => true,  :title => 'Lines of Code per day', :color => 'red')
+    @repo.should_receive(:chart_loc_per_day).once.with(:file => 'timeline/chart_loc_per_day_thumbnail.png', :thumbnail => true,  :title => 'Lines of Code per day', :color => 'red')
 
     @repo.generate_charts 'timeline'
   end
@@ -33,9 +33,9 @@ context "Method generate_charts" do
       end
 
       @repo.should_receive(:chart_loc_per_commit).once.with(:file => 'dir\chart_loc_per_commit.png', :color => 'blue')
-      @repo.should_receive(:chart_loc_per_commit).once.with(:file => 'dir\chart_loc_per_commit_small.png', :small => true, :title => 'Lines of Code per commit', :color => 'blue')
+      @repo.should_receive(:chart_loc_per_commit).once.with(:file => 'dir\chart_loc_per_commit_thumbnail.png', :thumbnail => true, :title => 'Lines of Code per commit', :color => 'blue')
       @repo.should_receive(:chart_loc_per_day).once.with(:file => 'dir\chart_loc_per_day.png', :color => 'red')
-      @repo.should_receive(:chart_loc_per_day).once.with(:file => 'dir\chart_loc_per_day_small.png', :small => true, :title => 'Lines of Code per day', :color => 'red')
+      @repo.should_receive(:chart_loc_per_day).once.with(:file => 'dir\chart_loc_per_day_thumbnail.png', :thumbnail => true, :title => 'Lines of Code per day', :color => 'red')
 
       @repo.generate_charts 'dir'
 
