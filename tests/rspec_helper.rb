@@ -251,10 +251,10 @@ module Spec::Runner::ContextEval::ModuleMethods
       @repo.send(options[:method])
     end
 
-    specify "should create 120px width chart when :small argument is present" do
+    specify "should create 120px width chart when :thumbnail argument is present" do
       Gruff::Line.should_receive(:new).with(120).and_return(@gruff_line_object)
 
-      @repo.send(options[:method], :small => true)
+      @repo.send(options[:method], :thumbnail => true)
     end
 
     specify "should not hide line markers by default" do
@@ -263,10 +263,10 @@ module Spec::Runner::ContextEval::ModuleMethods
       @repo.send(options[:method])
     end
 
-    specify "should hide line markers when :small argument is present" do
+    specify "should hide line markers when :thumbnail argument is present" do
       @gruff_line_object.should_receive(:hide_line_markers=).with(true)
 
-      @repo.send(options[:method], :small => true)
+      @repo.send(options[:method], :thumbnail => true)
     end
 
     specify "should not set title font size to 50 by default" do
@@ -275,10 +275,10 @@ module Spec::Runner::ContextEval::ModuleMethods
       @repo.send(options[:method])
     end
 
-    specify "should set title font size to 50 when :small argument is present" do
+    specify "should set title font size to 50 when :thumbnail argument is present" do
       @gruff_line_object.should_receive(:title_font_size=).with(50)
 
-      @repo.send(options[:method], :small => true)
+      @repo.send(options[:method], :thumbnail => true)
     end
   end
 end

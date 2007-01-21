@@ -31,7 +31,7 @@
       <% AvailableCharts.each do |chart| %>
         <li class="chart">
           <a onclick="return showPic(this)" href="<%= chart.filename %>" title="<%= chart.title %>">
-            <img src="<%= chart.small_filename %>" alt="<%= chart.title %>" />
+            <img src="<%= chart.thumbnail_filename %>" alt="<%= chart.title %>" />
           </a>
         </li>
       <% end %>
