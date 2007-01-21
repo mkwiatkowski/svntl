@@ -5,19 +5,19 @@ require 'date'
 context "Method chart_loc_per_day" do
   chart_spec :method => :chart_loc_per_day
 
-  specify "should use at most 10 labels" do
+  specify "should use at most 8 labels" do
     @repo.revisions_append_with_loc((1..53).to_a)
     @gruff_line_object.should_receive(:labels=) do |labels|
-      labels.size.should <= 10
+      labels.size.should <= 8
     end
 
     @repo.chart_loc_per_day
   end
 
-  specify "should use exactly 10 lables for repository with 40 revisions" do
+  specify "should use exactly 8 lables for repository with 40 revisions" do
     @repo.revisions_append_with_loc((1..40).to_a)
     @gruff_line_object.should_receive(:labels=) do |labels|
-      labels.size.should == 10
+      labels.size.should == 8
     end
 
     @repo.chart_loc_per_day

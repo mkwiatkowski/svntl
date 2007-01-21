@@ -189,14 +189,19 @@ class Integer
   end
 end
 
-class String
-  def without_prefix delimiter='_'
-    slice /[^#{delimiter}]+#{delimiter}(.*)/, 1
-  end
-end
-
 module SvnTimeline
   class SubversionRepository
+    Chart = Struct.new(:method, :title, :color)
+    class Chart
+      def filename ; "#{method}.png" ; end
+      def small_filename ; "#{method}_small.png" ; end
+    end
+
+    AvailableCharts = [
+        Chart.new('chart_loc_per_commit', 'Lines of Code per commit', 'blue'),
+        Chart.new('chart_loc_per_day',    'Lines of Code per day',    'red'),
+    ]
+
     def chart_loc_per_commit options={}
       chart_loc(20, options) do |revisions|
         revisions.map { |rev| [rev.number, rev.loc] }
@@ -204,7 +209,7 @@ module SvnTimeline
     end
 
     def chart_loc_per_day options={}
-      chart_loc(10, options) do |revisions|
+      chart_loc(8, options) do |revisions|
         rev_by_day = revisions.by_day
 
         unless revisions.empty?
@@ -229,20 +234,32 @@ module SvnTimeline
       revisions = @revisions.without_trailing_empty
 
       if options[:small]
-        @chart = Gruff::Line.new 200
+        @chart = Gruff::Line.new 120
       else
-        @chart = Gruff::Line.new
+        @chart = Gruff::Line.new 500
       end
+
+      @chart.theme = {
+        :colors => [ (options[:color] or 'blue') ],
+        :marker_color => 'black',
+        :font_color => 'black',
+        :background_colors => ['white', 'white']
+      }
 
       labels, data = yield(revisions).sort.keys_and_values
 
       @chart.data "LOC", data
       @chart.labels = max_labels.labels_from labels.map_with(:to_s)
 
-      @chart.title = (options[:title] or @project_name)
+      if options[:title]
+        @chart.title = options[:title]
+      else
+        @chart.hide_title = true
+      end
+
       @chart.hide_dots = true
       @chart.hide_legend = true
-      @chart.marker_font_size = 10
+      @chart.marker_font_size = 15
 
       if options[:small]
         @chart.hide_line_markers = true
@@ -252,22 +269,15 @@ module SvnTimeline
       @chart.write((options[:file] or 'loc.png'))
     end
 
-    def chart_methods
-      public_methods.grep /^chart_(.*)/
-    end
-
     # Generate charts and save them to _directory_.
-    def generate_charts directory, options={}
-      call_chart = lambda do |chart, small, suffix|
-        chart_options = { :file => File.join(directory, "#{chart.without_prefix}#{suffix}.png") }
-        chart_options[:title] = options[:title] if options[:title]
-        chart_options[:small] = true if small
-        send chart, chart_options
-      end
-
-      chart_methods.each do |chart|
-        call_chart.call chart, false, ''
-        call_chart.call chart, true, '_small'
+    def generate_charts directory
+      AvailableCharts.each do |chart|
+        send chart.method, :file => File.join(directory, chart.filename),
+                           :color => chart.color
+        send chart.method, :file => File.join(directory, chart.small_filename),
+                           :color => chart.color,
+                           :title => chart.title,
+                           :small => true
       end
     end
   end
