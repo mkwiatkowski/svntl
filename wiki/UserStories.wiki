@@ -1,6 +1,11 @@
 #summary Aggregator page for all user stories.
 #labels Featured
 
+== Create richer set of charts ==
+
+|| *Task* || *Description* || *Status* ||
+|| Support XML output for [http://simile.mit.edu/timeline/ Timeline] || || todo ||
+
 == Deliver svntl application ==
 Make a command line tool available for users. The simplest case should be {{{"svntl SVN_URL"}}} to generate all graphs.
 
