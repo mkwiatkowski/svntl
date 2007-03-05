@@ -2,6 +2,14 @@ require 'spec/rake/spectask'
 require 'spec/rake/verify_rcov'
 require 'rake/rdoctask'
 
+def egrep(pattern)
+  Dir['**/*.rb'].each do |filename|
+    IO.readlines(filename).each_with_index do |line, count|
+      puts "#{filename}:#{count+1}:#{line}" if line =~ pattern
+    end
+  end
+end
+
 spec_files = FileList['tests/*_spec.rb']
 spec_opts = ["--format", "specdoc", "--require", "tests/rspec_ext.rb", "--require", "tests/rspec_helper.rb", "--color"]
 
@@ -25,6 +33,11 @@ Rake::RDocTask.new do |t|
   t.rdoc_dir = "rdoc"
   t.options << "--diagram"
   t.options << "--inline-source"
+end
+
+desc "Look for TODO and FIXME tags in the code"
+task :todo do
+  egrep /(FIXME|TODO)/
 end
 
 task :default  => :verify_rcov
