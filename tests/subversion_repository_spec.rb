@@ -1,6 +1,3 @@
-require 'rubygems'
-require 'builder'
-require 'set'
 require 'date'
 
 require 'svntl'

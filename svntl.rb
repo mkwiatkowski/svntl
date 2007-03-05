@@ -1,6 +1,7 @@
 require 'date'
 require 'erb'
 require 'enumerator'
+require 'fileutils'
 require 'rexml/document'
 
 # Ignore non-existent rubygems.
@@ -33,6 +34,9 @@ module Enumerable
 end
 
 module SvnTimeline
+  VERSION = 'dev'
+  REV = "$LastChangedRevision$".match(/LastChangedRevision: (\d+)/)[1]
+
   # Execute given command, returning its output on success.
   # On error raise IOError.
   def execute_command command
@@ -290,11 +294,19 @@ module SvnTimeline
     File.open(path) { |file| file.read }
   end
 
+  module TemplateHelpers
+    def vertical_text text
+      return text.split('').join('<br />')
+    end
+  end
+
   class SubversionRepository
+    include TemplateHelpers
+
     private
     # Generate HTML files and save them to _directory_.
     def generate_html directory
-      template = ERB.new(read_file('templates/index.rhtml'))
+      template = ERB.new(read_file(File.join('templates', 'index.rhtml')))
 
       File.open(File.join(directory, 'index.html'), 'w') do |file|
         file.write(template.result(binding))
@@ -307,6 +319,8 @@ end
 # Generation of full statistics data (HTML + images).
 module SvnTimeline
   class SubversionRepository
+    STATIC_FILES = ['moo.fx.js', 'moo.fx.pack.js', 'prototype.lite.js']
+
     #
     # Generate all statistics files and save them to the same
     # directory.
@@ -316,6 +330,10 @@ module SvnTimeline
     #
     def generate_statistics directory='timeline'
       Dir.mkdir(directory) unless File.exist?(directory)
+
+      STATIC_FILES.each do |filename|
+        FileUtils.copy(File.join('templates', filename), directory)
+      end
 
       generate_charts directory
       generate_html directory

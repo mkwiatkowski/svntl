@@ -4,16 +4,64 @@
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <title><%= @project_name %> statistics</title>
     <style type="text/css">
-      body { font-size: 12px; }
-      h1, h2, .chart { text-align: center; }
-      h1, h2 { clear: both; }
-      h2 { font-size: 18px; font-weight: bold; }
-      ul { list-style: none; }
-      li { float: left; margin: 2px; }
+      body {
+        font-size: 12px;
+      }
+
+      h1, h2 { text-align: center; }
+
+      #menu {
+        width: 800px;
+        margin: 0 auto;
+        overflow: hidden;
+      }
+
+      .bar {
+        float: left;
+        width: 20px;
+        font-size: 10px;
+        height: 130px;
+        margin: 0 2px 0 0;
+        padding-left: 10px;
+        padding-top: 1em;
+        background-color: #a5bbee;
+      }
+
+      .bar_content {
+        float: left;
+        width: 600px;
+        margin-top: 0.5em;
+        margin-left: 0.5em;
+      }
+
+      .thumbnail { float: left; margin: 0 4px; }
+
+      #placeholder_parent { text-align: center; }
+
+      h2 {
+        clear: both;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
       img { border: 1px solid black; }
+
+      .about { font-size: 14px; line-height: 2em; }
     </style>
+    <script type="text/javascript" src="prototype.lite.js"></script>
+    <script type="text/javascript" src="moo.fx.js"></script>
+    <script type="text/javascript" src="moo.fx.pack.js"></script>
+    <script type="text/javascript">
+      window.onload = function() {
+        var stretchers = document.getElementsByClassName('bar_content');
+        var toggles = document.getElementsByClassName('bar');
+        var myAccordion = new fx.Accordion(
+          toggles, stretchers, {start: 'open-first', opacity: true, height: true, width: true, duration: 800, transition: fx.sineInOut});
+        myAccordion.showThisHideOpen(stretchers[0]);
+      }
+    </script>
     <script type="text/javascript" language="javascript">
-      function showPic (whichpic) {
+      function show_chart (whichpic) {
         if (document.getElementById) {
           document.getElementById('placeholder').src = whichpic.href;
           document.getElementById('description').childNodes[0].nodeValue = whichpic.title;
@@ -27,18 +75,29 @@
   <body>
     <h1><%= @project_name %> statistics</h1>
 
-    <ul>
-      <% AvailableCharts.each do |chart| %>
-        <li class="chart">
-          <a onclick="return showPic(this)" href="<%= chart.filename %>" title="<%= chart.title %>">
-            <img src="<%= chart.thumbnail_filename %>" alt="<%= chart.title %>" />
-          </a>
-        </li>
-      <% end %>
-    </ul>
+    <div id="menu">
+      <h3 class="bar" title="Evolution"><%= vertical_text "Evolution" %></h3>
+      <div class="bar_content">
+        <% AvailableCharts.each do |chart| %>
+          <div class="thumbnail">
+            <a onclick="return show_chart(this)" href="<%= chart.filename %>" title="<%= chart.title %>">
+              <img src="<%= chart.thumbnail_filename %>" alt="<%= chart.title %>" />
+            </a>
+          </div>
+        <% end %>
+      </div>
+
+      <h3 class="bar" title="About"><%= vertical_text "About" %></h3>
+      <div class="bar_content about">
+          <a href="http://code.google.com/p/svntl/">Subversion timeline</a><br />
+          Version: <%= VERSION %> (rev. <%= REV %>)<br />
+          License: <a href="http://www.opensource.org/licenses/bsd-license.php">new BSD license</a><br />
+          Written by <a href="http://joker.linuxstuff.pl/">Michal Kwiatkowski</a>
+      </div>
+    </div>
 
     <h2 id="description">Choose a chart to enlarge.</h2>
-    <p class="chart">
+    <p id="placeholder_parent">
       <img id="placeholder" alt="" />
     </p>
   </body>

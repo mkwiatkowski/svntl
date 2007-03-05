@@ -1,3 +1,6 @@
+require 'fileutils'
+require 'stringio'
+
 require 'svntl'
 include SvnTimeline
 
@@ -7,6 +10,8 @@ module Spec::Runner::ContextEval::ModuleMethods
       @repo = SubversionRepository.new 'file:///existing/repository'
       @repo.stub!(:generate_charts)
       @repo.stub!(:generate_html)
+
+      File.stub!(:open).and_yield(StringIO.new)
     end
   end
 end
@@ -68,5 +73,13 @@ context "Method generate_statistics for non-existing timeline/ directory" do
     @repo.should_receive(:generate_html).with('svntl')
 
     @repo.generate_statistics 'svntl'
+  end
+
+  specify "should copy 'moo.fx.js', 'moo.fx.pack.js' and 'prototype.lite.js' into destionation directory" do
+    FileUtils.should_receive(:copy).with('templates/moo.fx.js', 'timeline')
+    FileUtils.should_receive(:copy).with('templates/moo.fx.pack.js', 'timeline')
+    FileUtils.should_receive(:copy).with('templates/prototype.lite.js', 'timeline')
+
+    @repo.generate_statistics
   end
 end
