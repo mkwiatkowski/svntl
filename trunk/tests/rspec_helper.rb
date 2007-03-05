@@ -1,3 +1,8 @@
+require 'date'
+
+require 'rubygems'
+require 'builder'
+
 require 'svntl'
 include SvnTimeline
 
@@ -33,6 +38,10 @@ class Array
   def insert_at_random *obj
     insert(rand(size+1), *obj)
   end
+
+  def without_duplicates
+    self | []
+  end
 end
 
 class Integer
@@ -42,7 +51,7 @@ class Integer
 end
 
 def keys_of *hashes
-  hashes.inject([]) { |all_keys, hash| all_keys.concat hash.keys }.to_set
+  hashes.inject([]) { |all_keys, hash| all_keys.concat hash.keys }.without_duplicates
 end
 
 module Spec::Runner::ContextEval::ModuleMethods
