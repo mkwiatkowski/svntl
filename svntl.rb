@@ -12,7 +12,7 @@ rescue LoadError
 end
 
 # Require a gem and provide usefull error message if require wasn't successful.
-def save_require module_name, reason, rubyforge_id
+def safe_require module_name, reason, rubyforge_id
   require module_name
 rescue LoadError
   $stderr.puts "You don't seem to have #{module_name.capitalize} library installed. It is needed for #{reason}.",
@@ -22,8 +22,8 @@ rescue LoadError
   exit 1
 end
 
-save_require 'gruff', 'chart generation', 1044
-save_require 'open4', 'running `svn` command', 1024
+safe_require 'gruff', 'chart generation', 1044
+safe_require 'open4', 'running `svn` command', 1024
 
 ######################################################################
 # Data retrieval part.
