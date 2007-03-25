@@ -13,7 +13,7 @@ Make a command line tool available for users. The simplest case should be {{{"sv
 || Silence stderr of `SvnTimeline::execute_command` || *``* passes stderr through, as well as *IO.popen*, while *Open3.popen3* returns invalid exit code. || completed (rev. 49) ||
 || HTML output that gathers all charts together || Using [http://www.ruby-doc.org/stdlib/libdoc/erb/rdoc/ erb]. || todo ||
 || Command line interface || || todo ||
-|| Create ruby gem || Remember about gruff requirement. || todo ||
+|| Create ruby gem || Remember about gruff requirement. Follow [http://drnicwilliams.com/2006/10/11/generating-new-gems/ the tutorial]. || todo ||
 
 == LOC changes per time (completed in rev. 35) ==
 Graph of how LOC changes during whole project development. X-axis represent time (since revision 1 commit time to last revision commit time) and Y-axis - LOC. Binary files should be omitted.
