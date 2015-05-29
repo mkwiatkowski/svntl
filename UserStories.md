@@ -1,0 +1,25 @@
+## Create richer set of charts ##
+
+| **Task** | **Description** | **Status** |
+|:---------|:----------------|:-----------|
+| Support XML output for [Timeline](http://simile.mit.edu/timeline/) |                 | todo       |
+
+## Deliver svntl application ##
+Make a command line tool available for users. The simplest case should be `"svntl SVN_URL"` to generate all graphs.
+
+| **Task** | **Description** | **Status** |
+|:---------|:----------------|:-----------|
+| Silence stderr of `SvnTimeline::execute_command` | **``** passes stderr through, as well as **IO.popen**, while **Open3.popen3** returns invalid exit code. | completed (rev. 49) |
+| HTML output that gathers all charts together | Using [erb](http://www.ruby-doc.org/stdlib/libdoc/erb/rdoc/). | todo       |
+| Command line interface |                 | todo       |
+| Create ruby gem | Remember about gruff requirement. Follow [the tutorial](http://drnicwilliams.com/2006/10/11/generating-new-gems/). | todo       |
+
+## LOC changes per time (completed in rev. 35) ##
+Graph of how LOC changes during whole project development. X-axis represent time (since [revision 1](https://code.google.com/p/svntl/source/detail?r=1) commit time to last revision commit time) and Y-axis - LOC. Binary files should be omitted.
+
+| **Task** | **Description** | **Status** |
+|:---------|:----------------|:-----------|
+| Getting number of last revision for given Subversion repository | Via standard 'svn' command using 'info --xml' argument. We need an XML parser, which will probably be stdlib's REXML. | completed (rev. 16) |
+| Counting LOC of the whole project for given revision | Going hardcore and doing 'svn cat' for each file in a revision seems like an overkill. I'm thinking about doing 'svn diff' between revisions and calculating number of added/deleted lines by looking at the diff output. There exist [a sample python script](http://viewvc.tigris.org/source/browse/viewvc/trunk/bin/svndbadmin?rev=1288&view=markup) for doing that, so it won't be hard to implement. Actual algorithm would execute `svn diff -rREV1:REV2 --diff-cmd "diff" -x "--normal"` and grep for `^<` and `^>`. | completed (rev. 18) |
+| Generating a graph of LOC/commit |                 | completed (rev. 25) |
+| Generating a graph of LOC/day | Graph libraries to consider: [Gruff](http://nubyonrails.com/pages/gruff), [SVG::Graph](http://www.germane-software.com/software/SVG/SVG::Graph/), ...more? | completed (rev. 35) |
